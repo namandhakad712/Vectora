@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vectora</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}" />
+</head>
+<body>
+  <div class="outer-rounded">
+    <div class="circle-bg"></div>
+    <header class="main-header">
+      <nav class="navbar">
+        <div class="navbar-logo">
+          <img src="{{ url_for('static', filename='sigma.svg') }}" alt="Sigma Logo" class="sigma-img-navbar" />
+        </div>
+        <ul class="navbar-links">
+          <li><a href="/" class="active" data-i18n="nav_home">Home</a></li>
+          <li><a href="/about" data-i18n="nav_about">About</a></li>
+          <li><a href="/contact" data-i18n="nav_contact">Contact</a></li>
+          <li><a href="/patent" class="patent-link" data-i18n="nav_patent"><em>Patent</em></a></li>
+          <li><a href="/extension" data-i18n="ai_check">AI Check</a></li>
+        </ul>
+        <div class="navbar-actions">
+          <button class="login-btn" data-i18n="login">Login</button>
+          <button class="lang-btn" id="top-lang-btn" data-i18n="langBtn">Hindi / English</button>
+        </div>
+      </nav>
+    </header>
+    <main class="home-main">
+      <section class="home-hero">
+        <div class="hero-left">
+          <div class="hero-text">
+            <span class="verify-text" data-i18n="verify_text">Verify before you</span>
+            <h1 class="believe-text" data-i18n="believe_text">believe.</h1>
+          </div>
+          <button id="use-vectora-btn" type="button" class="use-vectora-btn">
+            <img src="{{ url_for('static', filename='sigma.svg') }}" alt="Sigma Logo" class="sigma-img-btn" /> <span data-i18n="use_vectora">USE VECTORA</span>
+          </button>
+        </div>
+        <div class="hero-right">
+          <div class="sigma-wrap">
+            <img src="{{ url_for('static', filename='sigma.svg') }}" alt="Sigma Logo" class="sigma-img-large" />
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="main-footer">
+      <p>Made for Rural India | 2025 &mdash; Powered by Vectora</p>
+    </footer>
+  </div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script>
+    // If SVG fails to load, fall back to PNG
+    (function(){
+      const png = "{{ url_for('static', filename='sigma.png') }}";
+      document.querySelectorAll('.sigma-img-navbar, .sigma-img-btn, .sigma-img-large').forEach(img => {
+        img.addEventListener('error', () => {
+          if (img.src && !img.src.endsWith('sigma.png')) img.src = png;
+        });
+      });
+    })();
+    // Wire the new Use Vectora button to navigate to /check (keeps it a button element)
+    (function(){
+      const btn = document.getElementById('use-vectora-btn');
+      if(btn){ btn.addEventListener('click', ()=> { sessionStorage.setItem('hide-top-lang','1'); window.location.href = '/check'; }); }
+    })();
+  </script>
+</body>
+</html>
