@@ -1,70 +1,726 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vectora</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VECTORA | Reality Defense Protocol</title>
+  <style>
+    /* --- 0. SYSTEM CORE --- */
+    :root {
+      --bg: #000000;
+      --grid: #111111;
+      --primary: #00f3ff;
+      /* Cyber Cyan */
+      --secondary: #ff0055;
+      /* Glitch Red */
+      --tertiary: #ffe600;
+      /* Warning Yellow */
+      --success: #00ff9d;
+      /* Truth Green */
+      --text: #e0e0e0;
+      --glass: rgba(255, 255, 255, 0.03);
+      --font-head: 'Syncopate', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;700&family=Syncopate:wght@400;700&display=swap');
+
+    * {
+      box-sizing: border-box;
+      cursor: none;
+      /* Custom Cursor Mode */
+    }
+
+    body {
+      margin: 0;
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      overflow-x: hidden;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* NOISE GRAIN OVERLAY */
+    .noise-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9998;
+      /* Just below cursor */
+      opacity: 0.07;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    }
+
+    /* Custom Cursor */
+    #cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: difference;
+      transition: width 0.3s, height 0.3s, border-color 0.3s;
+    }
+
+    #cursor-dot {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 4px;
+      background: var(--primary);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+    }
+
+    /* --- 1. LOADER --- */
+    #preloader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .loader-text {
+      color: var(--primary);
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 5px;
+    }
+
+    /* --- 2. HERO SECTION --- */
+    .hero {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .hero-title-wrapper {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      mix-blend-mode: difference;
+    }
+
+    h1 {
+      font-family: var(--font-head);
+      font-size: clamp(3rem, 12vw, 15rem);
+      margin: 0;
+      line-height: 0.8;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text);
+      opacity: 0;
+      /* JS Reveal */
+    }
+
+    .hero-subtitle {
+      margin-top: 2rem;
+      font-size: 1rem;
+      color: var(--secondary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    /* Background Circuit SVG */
+    .circuit-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* --- 3. SCROLL SECTION: THE PROBLEM --- */
+    .section-problem {
+      height: 150vh;
+      /* Long scroll */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      background: #050505;
+    }
+
+    .chaos-text {
+      font-family: var(--font-head);
+      font-size: clamp(2rem, 5vw, 4rem);
+      max-width: 80%;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .highlight-bad {
+      color: var(--secondary);
+      display: inline-block;
+    }
+
+    /* --- 4. INTERACTIVE SECTION: THE LENS --- */
+    .section-scanner {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      border-top: 1px solid #333;
+      cursor: none;
+      /* Ensure system cursor is hidden */
+      background: #000;
+    }
+
+    /* Text Containers */
+    .code-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      padding: 50px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.6;
+      word-break: break-all;
+      overflow: hidden;
+      display: flex;
+      flex-wrap: wrap;
+      align-content: flex-start;
+    }
+
+    /* Background: Encrypted / Blurry */
+    .layer-encrypted {
+      color: #333;
+      z-index: 1;
+      filter: blur(2px);
+      /* Blur the noise */
+      user-select: none;
+    }
+
+    /* Lens: The viewing window */
+    .truth-lens {
+      width: 150px;
+      /* Small Lens */
+      height: 150px;
+      border-radius: 50%;
+      border: 2px solid var(--primary);
+      position: absolute;
+      z-index: 10;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.4), inset 0 0 20px rgba(0, 243, 255, 0.2);
+      pointer-events: none;
+      /* Let clicks pass through */
+      /* Initial position centered */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    /* Inner Content of Lens: Decrypted */
+    .lens-inner {
+      width: 100vw;
+      /* Match Section Width */
+      height: 100vh;
+      /* Match Section Height */
+      position: absolute;
+      /* This will be offset by JS to match parent */
+      top: 0;
+      left: 0;
+      background: transparent;
+      color: var(--primary);
+      text-shadow: 0 0 5px var(--primary);
+      font-weight: 700;
+    }
+
+    .text-red {
+      color: var(--secondary);
+      text-shadow: 0 0 5px var(--secondary);
+    }
+
+    .text-green {
+      color: var(--success);
+      text-shadow: 0 0 8px var(--success);
+    }
+
+    /* --- 5. CONTROL MODULE (TOGGLE) --- */
+    .control-module {
+      background: #080808;
+      padding: 60px 0;
+      border-bottom: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      z-index: 20;
+    }
+
+    #morph-svg {
+      width: 120px;
+      height: 120px;
+      overflow: visible;
+      cursor: pointer;
+    }
+
+    .control-status {
+      margin-top: 20px;
+      font-family: var(--font-head);
+      letter-spacing: 2px;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: var(--secondary);
+      border-radius: 50%;
+      margin-right: 10px;
+      box-shadow: 0 0 10px var(--secondary);
+    }
+
+    /* --- 6. OBSERVER SECTION --- */
+    .section-features {
+      min-height: 100vh;
+      padding: 100px 5vw;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 50px;
+      align-items: center;
+      perspective: 1000px;
+    }
+
+    .feature-card {
+      background: var(--glass);
+      border: 1px solid #333;
+      padding: 40px;
+      height: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.1s;
+      /* Smooth observer update */
+    }
+
+    .card-icon {
+      font-size: 3rem;
+      color: var(--tertiary);
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    /* --- 7. FOOTER --- */
+    footer {
+      padding: 50px 0;
+      text-align: center;
+      border-top: 1px solid #222;
+    }
+
+    .footer-credit {
+      font-size: 0.9rem;
+      color: #666;
+      text-transform: uppercase;
+    }
+
+    .footer-credit span {
+      color: var(--primary);
+    }
+
+    /* SCROLL PROGRESS */
+    .progress-line {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: var(--primary);
+      width: 0%;
+      z-index: 9000;
+    }
+  </style>
 </head>
+
 <body>
-  <div class="outer-rounded">
-    <div class="circle-bg"></div>
-    <header class="main-header">
-      <nav class="navbar">
-        <div class="navbar-logo">
-          <img src="{{ url_for('static', filename='sigma.svg') }}" alt="Sigma Logo" class="sigma-img-navbar" />
-        </div>
-        <ul class="navbar-links">
-          <li><a href="/" class="active" data-i18n="nav_home">Home</a></li>
-          <li><a href="/about" data-i18n="nav_about">About</a></li>
-          <li><a href="/contact" data-i18n="nav_contact">Contact</a></li>
-          <li><a href="/patent" class="patent-link" data-i18n="nav_patent"><em>Patent</em></a></li>
-          <li><a href="/extension" data-i18n="ai_check">AI Check</a></li>
-        </ul>
-        <div class="navbar-actions">
-          <button class="login-btn" data-i18n="login">Login</button>
-          <button class="lang-btn" id="top-lang-btn" data-i18n="langBtn">Hindi / English</button>
-        </div>
-      </nav>
-    </header>
-    <main class="home-main">
-      <section class="home-hero">
-        <div class="hero-left">
-          <div class="hero-text">
-            <span class="verify-text" data-i18n="verify_text">Verify before you</span>
-            <h1 class="believe-text" data-i18n="believe_text">believe.</h1>
-          </div>
-          <button id="use-vectora-btn" type="button" class="use-vectora-btn">
-            <img src="{{ url_for('static', filename='sigma.svg') }}" alt="Sigma Logo" class="sigma-img-btn" /> <span data-i18n="use_vectora">USE VECTORA</span>
-          </button>
-        </div>
-        <div class="hero-right">
-          <div class="sigma-wrap">
-            <img src="{{ url_for('static', filename='sigma.svg') }}" alt="Sigma Logo" class="sigma-img-large" />
-          </div>
-        </div>
-      </section>
-    </main>
-    <footer class="main-footer">
-      <p>Made for Rural India | 2025 &mdash; Powered by Vectora</p>
-    </footer>
+
+  <!-- GLOBAL NOISE -->
+  <div class="noise-overlay"></div>
+
+  <!-- CUSTOM CURSOR -->
+  <div id="cursor"></div>
+  <div id="cursor-dot"></div>
+
+  <!-- PRELOADER -->
+  <div id="preloader">
+    <div class="loader-text" id="loader-txt">INITIALIZING VECTORA...</div>
+    <div style="margin-top: 10px; width: 200px; height: 1px; background: #333;">
+      <div id="loader-bar" style="width: 0%; height: 100%; background: var(--primary);"></div>
+    </div>
   </div>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+  <!-- SCROLL PROGRESS -->
+  <div class="progress-line"></div>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <svg class="circuit-bg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+      <path id="path-main" d="M0,540 C400,540 500,200 800,200 C1100,200 1200,900 1600,900 C1800,900 1920,540 2200,540"
+        fill="none" stroke="#222" stroke-width="2" />
+      <path id="path-draw" d="M0,540 C400,540 500,200 800,200 C1100,200 1200,900 1600,900 C1800,900 1920,540 2200,540"
+        fill="none" stroke="var(--primary)" stroke-width="4" />
+      <circle class="particle" r="5" fill="#fff" />
+      <circle class="particle" r="5" fill="#fff" />
+      <circle class="particle" r="5" fill="#fff" />
+    </svg>
+
+    <div class="hero-title-wrapper">
+      <h1 id="hero-h1">VECTORA</h1>
+      <div class="hero-subtitle">
+        <span class="scramble-sub">AI DETECTION</span> //
+        <span class="scramble-sub">FACT CHECKING</span> //
+        <span class="scramble-sub">TRUTH ENGINE</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION: THE PROBLEM -->
+  <section class="section-problem" id="problem-sec">
+    <div class="chaos-text" id="chaos-text">
+      THE INTERNET IS <span class="highlight-bad">BROKEN</span>.<br>
+      MISINFORMATION IS A <span class="highlight-bad">VIRUS</span>.<br>
+      REALITY IS <span class="highlight-bad">COMPROMISED</span>.
+    </div>
+  </section>
+
+  <!-- SECTION: THE SCANNER (UPDATED) -->
+  <section class="section-scanner" id="scanner-sec">
+
+    <!-- Layer 1: Encrypted Noise (Visible Background) -->
+    <div class="code-container layer-encrypted" id="encrypted-grid">
+      <!-- Filled by JS -->
+    </div>
+
+    <!-- The Lens (Follows Cursor) -->
+    <div class="truth-lens" id="lens">
+      <!-- Layer 2: Decrypted Truth (Inside Lens) -->
+      <div class="code-container lens-inner" id="decrypted-grid">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+
+  </section>
+
+  <!-- SECTION: CONTROL MODULE (SECURITY TOGGLE) -->
+  <section class="control-module" id="control-sec">
+    <svg id="morph-svg" viewBox="0 0 100 100">
+      <path id="morph-path" d="M50,15 L90,85 L10,85 Z" fill="none" stroke="var(--secondary)" stroke-width="2" />
+    </svg>
+    <div class="control-status" id="control-status-text">
+      <span class="status-indicator" id="status-dot"></span>
+      SYSTEM UNSECURED
+    </div>
+    <div style="margin-top: 10px; font-size: 0.8rem; color: #666;">CLICK ICON TO ACTIVATE DEFENSE PROTOCOLS</div>
+  </section>
+
+  <!-- SECTION: FEATURES -->
+  <section class="section-features" id="features">
+    <div class="feature-card tilt-card">
+      <div class="card-icon">01</div>
+      <div>
+        <h3 class="card-title">Manifest V3</h3>
+        <p>Chrome Extension architecture designed for stealth and speed.</p>
+      </div>
+    </div>
+    <div class="feature-card tilt-card" style="margin-top: 100px;">
+      <div class="card-icon">02</div>
+      <div>
+        <h3 class="card-title">Neural Scan</h3>
+        <p>Python Flask backend analyzing NLP patterns in milliseconds.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-credit">
+      ARCHITECTED BY <span>NAMAN DHAKAD</span> | ISC TOPPER 2025
+    </div>
+  </footer>
+
+  <!-- GSAP LIBRARIES -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/Draggable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/InertiaPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/MorphSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/MotionPathPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/SplitText.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/ScrambleTextPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/Observer.min.js"></script>
+
   <script>
-    // If SVG fails to load, fall back to PNG
-    (function(){
-      const png = "{{ url_for('static', filename='sigma.png') }}";
-      document.querySelectorAll('.sigma-img-navbar, .sigma-img-btn, .sigma-img-large').forEach(img => {
-        img.addEventListener('error', () => {
-          if (img.src && !img.src.endsWith('sigma.png')) img.src = png;
-        });
+    // --- 0. SETUP ---
+    gsap.registerPlugin(
+      ScrollTrigger, Draggable, InertiaPlugin, DrawSVGPlugin,
+      MorphSVGPlugin, MotionPathPlugin, SplitText, ScrambleTextPlugin, Observer
+    );
+
+    // --- 1. CURSOR LOGIC ---
+    const cursor = document.getElementById("cursor");
+    const dot = document.getElementById("cursor-dot");
+
+    window.addEventListener("mousemove", (e) => {
+      gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.15, ease: "power2.out" });
+      gsap.to(dot, { x: e.clientX, y: e.clientY, duration: 0.05 });
+    });
+
+    // --- 2. TEXT GENERATOR FOR SCANNER ---
+    const encryptedEl = document.getElementById("encrypted-grid");
+    const decryptedEl = document.getElementById("decrypted-grid");
+    const lensEl = document.getElementById("lens");
+
+    // FAKE / DANGER DATA (Red Highlights)
+    const fakePhrases = [
+      "Narendra Modi is PM of <span class='text-red'>USA</span>",
+      "Earth is <span class='text-red'>FLAT</span>",
+      "Naman Dhakad Rank: <span class='text-red'>UNKNOWN</span>",
+      "AI will <span class='text-red'>DESTROY HUMANITY</span>",
+      "Data Security: <span class='text-red'>COMPROMISED</span>",
+      "Election Results: <span class='text-red'>FALSIFIED</span>",
+      "Vaccines contain <span class='text-red'>MICROCHIPS</span>",
+      "Global Warming is <span class='text-red'>A HOAX</span>",
+      "Moon Landing was <span class='text-red'>STAGED</span>",
+      "Network Status: <span class='text-red'>UNSECURED</span>",
+      "Identity Verification: <span class='text-red'>FAILED</span>",
+      "System Integrity: <span class='text-red'>0%</span>",
+    ];
+
+    // REAL / SECURE DATA (Green Highlights)
+    const realPhrases = [
+      "Narendra Modi is PM of <span class='text-green'>INDIA</span>",
+      "Earth is <span class='text-green'>ROUND</span>",
+      "Naman Dhakad Rank: <span class='text-green'>DISTRICT TOPPER (86.75%)</span>",
+      "AI will <span class='text-green'>EMPOWER HUMANITY</span>",
+      "Data Security: <span class='text-green'>ENCRYPTED (AES-256)</span>",
+      "Election Results: <span class='text-green'>VERIFIED</span>",
+      "Vaccines are <span class='text-green'>SAFE & EFFECTIVE</span>",
+      "Global Warming is <span class='text-green'>SCIENTIFIC FACT</span>",
+      "Moon Landing was <span class='text-green'>REAL (1969)</span>",
+      "Network Status: <span class='text-green'>PROTECTED</span>",
+      "Identity Verification: <span class='text-green'>CONFIRMED</span>",
+      "System Integrity: <span class='text-green'>100%</span>",
+    ];
+
+    // Function to populate the grid
+    function populateGrid(element, phraseArray, isEncryptedLayer = false) {
+      let content = "";
+      for (let i = 0; i < 300; i++) {
+        if (isEncryptedLayer) {
+          // Just noise for background
+          const chars = "010101XY#@!%&ERROR";
+          let scrambled = "";
+          for (let j = 0; j < 15; j++) scrambled += chars.charAt(Math.floor(Math.random() * chars.length));
+          content += `<span style="opacity:0.3">${scrambled}</span> `;
+        } else {
+          // Actual phrases for lens
+          const phrase = phraseArray[Math.floor(Math.random() * phraseArray.length)];
+          content += phrase + " // ";
+        }
+      }
+      element.innerHTML = content;
+    }
+
+    // Initial Load: Unsecured State
+    populateGrid(encryptedEl, [], true); // Background noise
+    populateGrid(decryptedEl, fakePhrases); // Lens shows Fake Data initially
+
+    // --- 3. SECURITY TOGGLE LOGIC ---
+    let isSecured = false;
+    const alertPath = "M50,15 L90,85 L10,85 Z"; // Triangle
+    const shieldPath = "M50,10 L90,30 V60 C90,80 50,95 50,95 C50,95 10,80 10,60 V30 Z"; // Shield
+    const statusText = document.getElementById("control-status-text");
+    const statusDot = document.getElementById("status-dot");
+
+    document.getElementById("morph-svg").addEventListener("click", () => {
+      isSecured = !isSecured;
+
+      // 1. Morph Icon
+      gsap.to("#morph-path", {
+        morphSVG: isSecured ? shieldPath : alertPath,
+        stroke: isSecured ? "#00ff9d" : "#ff0055",
+        fill: isSecured ? "rgba(0, 255, 157, 0.1)" : "none",
+        duration: 0.6,
+        ease: "elastic.out(1, 0.5)"
       });
-    })();
-    // Wire the new Use Vectora button to navigate to /check (keeps it a button element)
-    (function(){
-      const btn = document.getElementById('use-vectora-btn');
-      if(btn){ btn.addEventListener('click', ()=> { sessionStorage.setItem('hide-top-lang','1'); window.location.href = '/check'; }); }
-    })();
+
+      // 2. Update Status Text
+      statusText.innerHTML = isSecured ?
+        `<span class="status-indicator" style="background:#00ff9d; box-shadow:0 0 10px #00ff9d"></span> SYSTEM SECURED` :
+        `<span class="status-indicator" style="background:#ff0055; box-shadow:0 0 10px #ff0055"></span> SYSTEM UNSECURED`;
+
+      // 3. Update Lens Border
+      gsap.to(lensEl, {
+        borderColor: isSecured ? "#00ff9d" : "#ff0055",
+        boxShadow: isSecured ? "0 0 30px rgba(0, 255, 157, 0.4), inset 0 0 20px rgba(0, 255, 157, 0.2)" :
+          "0 0 30px rgba(255, 0, 85, 0.4), inset 0 0 20px rgba(255, 0, 85, 0.2)"
+      });
+
+      // 4. Update Lens Content (Re-populate with correct data)
+      // Use ScrambleText to transition cleanly
+      gsap.to(decryptedEl, {
+        opacity: 0, duration: 0.2, onComplete: () => {
+          populateGrid(decryptedEl, isSecured ? realPhrases : fakePhrases);
+          gsap.to(decryptedEl, { opacity: 1, duration: 0.2 });
+        }
+      });
+    });
+
+    // --- 4. LENS TRACKING LOGIC ---
+    const scannerSec = document.getElementById("scanner-sec");
+
+    scannerSec.addEventListener("mousemove", (e) => {
+      gsap.to(cursor, { opacity: 0, scale: 0 });
+      gsap.to(dot, { opacity: 0 });
+
+      const rect = scannerSec.getBoundingClientRect();
+      const relX = e.clientX - rect.left;
+      const relY = e.clientY - rect.top;
+
+      gsap.to(lensEl, {
+        x: relX, y: relY, duration: 0.1, ease: "power2.out",
+        xPercent: -50, yPercent: -50, left: 0, top: 0
+      });
+
+      // Move Inner Content OPPOSITE to lens
+      gsap.to(decryptedEl, {
+        x: -relX + (150 / 2),
+        y: -relY + (150 / 2),
+        duration: 0.1,
+        ease: "power2.out"
+      });
+    });
+
+    scannerSec.addEventListener("mouseleave", () => {
+      gsap.to(cursor, { opacity: 1, scale: 1 });
+      gsap.to(dot, { opacity: 1 });
+    });
+
+    // --- 5. BOOT SEQUENCE ---
+    const loadTl = gsap.timeline();
+    loadTl.to("#loader-bar", { width: "100%", duration: 1.5, ease: "power2.inOut" })
+      .to("#loader-txt", {
+        scrambleText: { text: "ACCESS GRANTED", chars: "01X_" },
+        duration: 1
+      })
+      .to("#preloader", { yPercent: -100, duration: 0.8, ease: "expo.inOut" }, "+=0.2")
+      .from("#hero-h1", { opacity: 0, scale: 0.8, duration: 1, ease: "back.out(1.7)" }, "-=0.4");
+
+    gsap.utils.toArray(".scramble-sub").forEach((el, i) => {
+      gsap.to(el, {
+        scrambleText: { text: el.innerText, chars: "upperCase" },
+        duration: 1.5,
+        delay: 2 + (i * 0.2)
+      });
+    });
+
+    // --- 6. HERO ANIMATION ---
+    gsap.fromTo("#path-draw",
+      { drawSVG: "0%" },
+      { drawSVG: "100%", duration: 3, ease: "power1.inOut", repeat: -1, yoyo: true, repeatDelay: 1 }
+    );
+
+    gsap.utils.toArray(".particle").forEach((p, i) => {
+      gsap.to(p, {
+        motionPath: { path: "#path-main", align: "#path-main", alignOrigin: [0.5, 0.5] },
+        duration: 8 + i * 2,
+        repeat: -1,
+        ease: "linear"
+      });
+    });
+
+    // --- 7. SCROLL SPLIT TEXT ---
+    document.fonts.ready.then(() => {
+      const split = new SplitText("#chaos-text", { type: "words, chars" });
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#problem-sec",
+          start: "top top",
+          end: "+=100%",
+          scrub: 1,
+          pin: true
+        }
+      });
+      tl.from(split.chars, {
+        opacity: 0,
+        x: () => Math.random() * 500 - 250,
+        y: () => Math.random() * 500 - 250,
+        rotate: () => Math.random() * 360,
+        duration: 1,
+        stagger: 0.01
+      });
+      tl.to(".highlight-bad", {
+        color: "#ff0055",
+        textShadow: "2px 0px 0px white",
+        skewX: 20,
+        duration: 0.2
+      });
+    });
+
+    // --- 8. OBSERVER CARDS ---
+    const cards = document.querySelectorAll(".tilt-card");
+    Observer.create({
+      target: window,
+      type: "pointer",
+      onMove: (self) => {
+        const xVel = self.velocityX * 0.02;
+        const yVel = self.velocityY * 0.02;
+        gsap.to(cards, { rotationY: xVel, rotationX: -yVel, duration: 0.5, ease: "power2.out" });
+      }
+    });
+
+    gsap.to(".progress-line", {
+      width: "100%",
+      ease: "none",
+      scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 0 }
+    });
+
   </script>
 </body>
+
 </html>
