@@ -1,0 +1,26 @@
+# Git LFS and Binary Handling
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.mp4 binary
+*.mov binary
+*.zip binary
+*.pdf binary
+*.DS_Store binary
+
+# Text
+*.html text
+*.css text
+*.js text
+*.py text
+*.json text
+*.md text
+*.txt text

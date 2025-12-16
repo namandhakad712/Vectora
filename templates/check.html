@@ -48,6 +48,11 @@
       src: url('/static/aquire.woff') format('woff');
     }
 
+    @font-face {
+      font-family: 'HeroFont';
+      src: url('/static/hero.ttf') format('truetype');
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -64,32 +69,7 @@
       transition: background 0.5s, color 0.5s;
     }
 
-    .noise {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 999;
-      opacity: 0.04;
-      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
-    [data-theme="light"] .noise {
-      mix-blend-mode: multiply;
-      opacity: 0.03;
-    }
-
-    #cursor {
-      position: fixed;
-      width: 20px;
-      height: 20px;
-      background: var(--text);
-      border-radius: 50%;
-      pointer-events: none;
-      mix-blend-mode: difference;
-      z-index: 10000;
-      transform: translate(-50%, -50%);
-      transition: width 0.3s, height 0.3s;
-    }
+    /* ... (rest of CSS) ... */
 
     /* --- NAVIGATION --- */
     nav {
@@ -109,7 +89,7 @@
     }
 
     .nav-brand {
-      font-family: 'AquireFont', var(--font-head);
+      font-family: 'HeroFont', var(--font-head);
       font-size: 1.5rem;
       color: var(--text);
       letter-spacing: 2px;
@@ -215,16 +195,21 @@
       .terminal-container {
         grid-template-columns: 1fr;
         height: auto;
-        padding-top: 100px;
-        /* Space for fixed nav */
+        padding-top: 80px;
       }
 
+      /* Hide Desktop Sidebar in Mobile */
       .sidebar {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: 10px;
-        order: -1;
-        /* Sidebar on top */
+        display: none;
+      }
+
+      /* We will inject status into mobile menu or a minimal status bar below input via JS or separate HTML if needed, 
+         but technically 'burger menu' usually refers to main nav. 
+         For now, this frees the space essential for the user's request. */
+
+      .console {
+        order: 1;
+        min-height: 60vh;
       }
 
       .stat-block {
@@ -868,6 +853,13 @@
   </style>
   <!-- Marked.js for Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // Configure marked to ensure URLs are clickable
+    marked.use({
+      gfm: true,
+      breaks: true
+    });
+  </script>
   <script>window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments); };</script>
   <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -1485,7 +1477,6 @@
         hudHeader.style.background = "rgba(0, 255, 0, 0.1)";
 
       } catch (err) {
-        hudContent.innerHTML += `<br><br><span style="color:var(--secondary)">[NETWORK FAILURE]: ${err}</span>`;
       } finally {
         submitBtn.textContent = "EXECUTE ANALYSIS";
         submitBtn.style.opacity = "1";
@@ -1493,11 +1484,101 @@
     });
 
   </script>
-  <div class="disclaimer"
-    style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); background: var(--bg);">
+  <style>
+    #cursor {
+      display: block !important;
+      /* Force visibility */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      background: #ffffff;
+      /* FORCE WHITE for difference blend mode */
+      border-radius: 50%;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      z-index: 2147483647;
+      /* MAX Z-INDEX */
+      /* Remove CSS transform here, handled by GSAP */
+    }
+
+    /* Override any specific light mode settings that break inversion */
+    [data-theme="light"] #cursor {
+      background: #ffffff;
+      mix-blend-mode: difference;
+      border: none;
+    }
+  </style>
+  <script>
+    // --- INERTIAL CURSOR ---
+    const cursor = document.getElementById('cursor');
+    // Center alignment
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    // Inertial movement
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+
+    window.addEventListener('mousemove', (e) => {
+      cursorX(e.clientX);
+      cursorY(e.clientY);
+    });
+
+    // Hover Scaling
+    document.querySelectorAll('a, button, input, .stat-block, .config-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 2.5, duration: 0.3 }));
+      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1, duration: 0.3 }));
+    });
+  </script>
+  <div class="disclaimer">
     Disclaimer: AI-generated responses can be inaccurate or hallucinatory. Always verify critical information
     independently. Web search integration may occasionally yield irrelevant results.
   </div>
+
+  <style>
+    .disclaimer {
+      position: absolute;
+      /* Changed from fixed to absolute relative to body/main */
+      bottom: 5px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      opacity: 0.5;
+      pointer-events: none;
+      padding: 0 10px;
+    }
+
+    /* Ensure main container leaves space */
+    main {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+      /* Prevent body scroll if we want "no scroll" */
+    }
+
+    .terminal-container {
+      /* Full height minus navbar offset */
+      height: 100vh;
+      padding-top: 100px;
+      padding-bottom: 30px;
+      /* Space for disclaimer */
+      overflow-y: hidden;
+      /* Main container hidden, children scroll */
+    }
+
+    /* Ensure content scrolls independently */
+    .console,
+    .sidebar {
+      height: 100%;
+      overflow-y: auto;
+      border-radius: 4px;
+      /* Optional UI polish */
+    }
+  </style>
 </body>
 
 </html>

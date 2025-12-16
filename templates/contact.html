@@ -46,6 +46,11 @@
       src: url('/static/aquire.woff') format('woff');
     }
 
+    @font-face {
+      font-family: 'HeroFont';
+      src: url('/static/hero.ttf') format('truetype');
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -61,7 +66,6 @@
       transition: background 0.5s, color 0.5s;
     }
 
-    /* --- GLOBAL FX --- */
     .noise {
       position: fixed;
       inset: 0;
@@ -107,7 +111,7 @@
     }
 
     .nav-brand {
-      font-family: 'AquireFont', var(--font-head);
+      font-family: 'HeroFont', var(--font-head);
       font-size: 1.5rem;
       color: var(--text);
       letter-spacing: 2px;
@@ -118,6 +122,12 @@
       display: flex;
       gap: 40px;
       list-style: none;
+    }
+
+    .footer-logo {
+      font-family: 'HeroFont';
+      font-size: 2rem;
+      color: var(--text);
     }
 
     .nav-link {
@@ -477,11 +487,19 @@
     gsap.from(".contact-grid", { y: 50, opacity: 0, duration: 1, ease: "power2.out", delay: 0.5 });
 
     const cursor = document.getElementById('cursor');
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+
     window.addEventListener('mousemove', (e) => {
-      gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+      gsap.to(cursor, { opacity: 1, duration: 0.2, overwrite: "auto" });
+      cursorX(e.clientX);
+      cursorY(e.clientY);
     });
+
     document.querySelectorAll('a, button, input, textarea').forEach(el => {
-      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 3 }));
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 2.5 }));
       el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1 }));
     });
   </script>

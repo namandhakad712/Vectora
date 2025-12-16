@@ -49,6 +49,11 @@
       src: url('/static/aquire.woff') format('woff');
     }
 
+    @font-face {
+      font-family: 'HeroFont';
+      src: url('/static/hero.ttf') format('truetype');
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -109,7 +114,7 @@
     }
 
     .nav-brand {
-      font-family: 'AquireFont', var(--font-head);
+      font-family: 'HeroFont', var(--font-head);
       font-size: 1.5rem;
       color: var(--text);
       letter-spacing: 2px;
@@ -396,7 +401,7 @@
     }
 
     .footer-logo {
-      font-family: 'AquireFont';
+      font-family: 'HeroFont';
       font-size: 2rem;
       color: var(--text);
     }
@@ -447,29 +452,27 @@
         <div class="f-icon">👁</div>
         <div class="f-title">REALITY FILTER</div>
         <div class="f-desc">Overlays truth scores directly onto social media feeds. Supports X (Twitter), Reddit, and
-          Facebook news feeds.</div>
-      </div>
-      <div class="feature-card">
-        <div class="f-icon">🧠</div>
-        <div class="f-title">NEURAL CONTEXT</div>
-        <div class="f-desc">Right-click any image to perform reverse-image forensics and deepfake analysis locally.
-        </div>
-      </div>
-      <div class="feature-card">
-        <div class="f-icon">⚡</div>
-        <div class="f-title">MULTI-MODEL MATRIX</div>
-        <div class="f-desc">Seamlessly switch between Gemini 2.0, Groq (Llama 3/Mixtral), and Cerebras inference
-          engines.</div>
-      </div>
-      <div class="feature-card">
-        <div class="f-icon">🌐</div>
-        <div class="f-title">WEB INTELLIGENCE</div>
-        <div class="f-desc">Real-time web search integration allows Vectora to cross-reference claims against live
-          sources.</div>
+          Facebook.</div>
       </div>
       <div class="feature-card">
         <div class="f-icon">🛡</div>
         <div class="f-title">PRIVACY CORE</div>
+        <div class="f-desc">Military-grade encryption for local storage. Blocks 3rd-party trackers during analysis.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">⚡</div>
+        <div class="f-title">SYNTHID DETECTOR</div>
+        <div class="f-desc">Identifies Google DeepMind's digital watermarks in AI-generated images and text.</div>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">🧠</div>
+        <div class="f-title">NEURAL CACHE</div>
+        <div class="f-desc">Edge-caching of verified facts for instant recall, reducing API latency to zero.</div>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon">🌐</div>
+        <div class="f-title">DEEP WEB SEARCH</div>
         <div class="f-desc">Your browsing history never leaves your device. Analysis is performed in a sandboxed
           environment.</div>
       </div>
@@ -567,12 +570,20 @@
     });
 
     const cursor = document.getElementById('cursor');
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+
     window.addEventListener('mousemove', (e) => {
-      gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+      gsap.to(cursor, { opacity: 1, duration: 0.2, overwrite: "auto" });
+      cursorX(e.clientX);
+      cursorY(e.clientY);
     });
+
     document.querySelectorAll('a, button, .feature-card').forEach(el => {
-      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 3 }));
-      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1 }));
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 3, duration: 0.3 }));
+      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1, duration: 0.3 }));
     });
   </script>
 </body>

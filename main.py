@@ -137,13 +137,14 @@ def stream_gemini(prompt, model, file_uri=None, mime_type=None, web_search=False
                                 web = c.get("web", {})
                                 if web:
                                     title = web.get("title", "Source")
-                                    uri = web.get("uri", "#")
-                                    links_md += f"- [{title}]({uri})\n"
-                                    found_links = True
+                                    uri = web.get("uri") or web.get("url") # Try both keys
+                                    if uri and uri.startswith("http"):
+                                        links_md += f"- [{title}]({uri})\n"
+                                        found_links = True
                             if found_links:
-                                yield links_md
+                                # Yield formatted source block
+                                yield "\n\n**Verified Sources:**\n" + links_md.replace("- [", "- ").replace("](", ": ").replace(")", "")
                     except Exception as e:
-                        # yield f"[Debug: Parsing Error {str(e)}]" 
                         pass
 
 # --- GROQ HELPERS ---
@@ -379,8 +380,8 @@ def process():
             "3. **ANALYSIS**: Provide a crisp, evidence-based explanation. "
             "Cite known facts and point out logical fallacies or manipulation tactics.\n"
             "4. **SOURCES**: List credible sources with their direct **URL links** to verify your claims. \n"
-            "   - **FORMAT**: `[Source Name](https://full.url.here)` \n"
-            "   - **CRITICAL**: Do NOT output blank links. If a specific URL is not available, do not list it. \n"
+            "   - **FORMAT**: Use the format `- Source Name: https://full.url.here` (Do NOT use markdown links like `[text](url)`). \n"
+            "   - **CRITICAL**: Only list sources if you have a VALID, non-empty URL. \n"
             "   - **VERIFICATION**: Ensure every link provided is a valid, accessible URL.\n\n"
             "Maintain an objective, professional, and authoritative tone."
         )

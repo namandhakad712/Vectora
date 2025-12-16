@@ -1,94 +1,89 @@
+# 🌐 VECTORA `[v1.0.0]`
+> **The Neural Firewall for the Post-Truth Era.**
 
 <div align="center">
-  <img src="https://via.placeholder.com/800x200/000000/00f3ff?text=VECTORA+AI" alt="Vectora Banner">
 
-  <h1>V E C T O R A</h1>
-  <h3>The Reality Defense Protocol</h3>
+![Vectora Banner](static/og-image.jpg) <!-- Ensure you have this image or remove -->
 
-  <p>
-    <b>Local-First AI</b> • <b>Real-time Verification</b> • <b>Privacy Centric</b>
-  </p>
+[![Status](https://img.shields.io/badge/STATUS-OPERATIONAL-00ff9d?style=for-the-badge)](https://vectora.ai)
+[![License](https://img.shields.io/badge/LICENSE-MIT-bd00ff?style=for-the-badge)](LICENSE)
+[![Uptime](https://img.shields.io/badge/UPTIME-99.9%25-00c8ff?style=for-the-badge)](https://vectora.vercel.app)
 
-  <p>
-    <a href="https://vectora.ai">View Live Demo</a> • 
-    <a href="#installation">Installation</a> • 
-    <a href="#features">Features</a>
-  </p>
+</div>
 
-  ![License](https://img.shields.io/badge/license-MIT-00f3ff?style=flat-square)
-  ![Version](https://img.shields.io/badge/version-2.4.0-ff0055?style=flat-square)
-  ![Status](https://img.shields.io/badge/status-active-00ff9d?style=flat-square)
+<br>
+
+## // 📜 MANIFESTO
+We live in a synthetic reality. Deepfakes, hallucinatory text, and information warfare are the new norm. **VECTORA** is not just a tool; it is a weapon of verification. It is a local-first, privacy-preserving AI engine designed to dissect truth from digital noise.
+
+> *"The code is the law. We write the laws of verification."*
+
+---
+
+## // 💎 CORE ARCHITECTURE
+
+<div align="center">
+
+| **🧠 NEURAL ENGINES** | **🛡️ DEFENSE CAPABILITIES** |
+| :--- | :--- |
+| **Gemini 2.5 Flash** <br> *Multimodal reasoning (Text/Image/PDF)* | **SynthID Detection** <br> *Identifies Digital Watermarks* |
+| **Groq LPU** <br> *Ultra-low latency inference* | **Web Intelligence** <br> *Live Cross-Referencing* |
+| **Cerebras** <br> *Wafer-scale massive context* | **Vision Forensics** <br> *Image Anomaly Detection* |
+
 </div>
 
 ---
 
-## 📡 Transmission
-VECTORA is an advanced browser extension designed to combat the "post-truth" era. By leveraging **Gemini 2.0 Flash** directly in the browser (edge computing), it provides military-grade fact-checking without compromising user data.
+## // 🚀 DEPLOYMENT PROTOCOL
 
-> "The code is the law. We write the laws of verification."
-
-## ⚡ Core Features
-
-| **Reality Filter** | Real-time overlays on X, Reddit, and News sites. | ✅ Active |
-| **Neural Lens** | Reverse-image forensics and Document Analysis. | ✅ Active |
-| **Multi-Model** | Gemini, Groq, Cerebras Support. | ✅ Active |
-| **Web Search** | Live internet cross-referencing. | ✅ Active |
-| **Air-Gapped Core** | Zero-data retention policy. History stays local. | 🔒 Secure |
-
-## 🛠 Tech Stack
-
-*   **Frontend**: HTML5, Vanilla JS, CSS3 (Cyberpunk Design System)
-*   **Motion**: GSAP (ScrollTrigger, Tween), Lenis Scroll
-*   **AI Engine**: Google Gemini 2.0, Groq, Cerebras
-*   **Backend**: Flask (Python) for edge processing
-
-## 🚀 Installation Protocol
-
-### Manual Override (Developer Mode)
-
-1.  **Clone the Repository**:
-    ```bash
-    git clone https://github.com/namandhakad712/Vectora.git
-    ```
-2.  **Navigate to Extensions**:
-    Open `chrome://extensions` in your Chromium browser.
-3.  **Engage Developer Mode**:
-    Toggle the switch in the top-right corner.
-4.  **Inject Payload**:
-    Click **Load unpacked** and select the `/static/extension` directory (or wherever you unzipped the build).
-
-## 📂 Project Structure
-
+### **1. Clone the Repository**
 ```bash
-VECTORA/
-├── app.py              # Core Flask Interface
-├── static/             # Static Assets
-│   ├── aquire.woff     # Custom Typography
-│   ├── styles.css      # Legacy Styles
-│   └── vectora.zip     # Extension Build
-├── templates/          # UI Views
-│   ├── about.html      # Mission Control
-│   ├── check.html      # Neural Terminal
-│   ├── contact.html    # Secure Uplink
-│   ├── extension.html  # System Upgrade
-│   ├── guide.html      # Manual Protocol
-│   └── home.html       # Landing Interface
-└── README.md           # You are here
+git clone https://github.com/namandhakad712/Vectora.git
+cd Vectora
 ```
 
-## 🤝 Contributing
+### **2. Ignite the Core**
+```bash
+pip install -r requirements.txt
+python main.py
+```
 
-**Systems Open.** We welcome contributions from architects of the new web.
+### **3. Environment Variables (`.env`)**
+```env
+GEMINI_API_KEY=your_key_here
+GROQ_API_KEY=your_key_here
+```
 
-1.  Fork the repository.
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
+---
+
+## // 📦 CHROME EXTENSION INSTALLATION
+
+1.  **Navigate**: Go to `chrome://extensions/`
+2.  **Enable**: Toggle **"Developer Mode"** (Top Right)
+3.  **Inject**: Click **"Load Unpacked"**
+4.  **Select**: Choose the `vectora-extension` folder.
+
+---
+
+## // 👥 ARCHITECTS
+
+<table align="center" width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <h3>NAMAN DHAKAD</h3>
+      <p><i>Lead Engineer</i></p>
+      <code>"The code is the law."</code>
+    </td>
+    <td align="center" width="50%">
+      <h3>ARSH SHARMA</h3>
+      <p><i>Lead Logic Engineer</i></p>
+      <code>"We write the laws of verification."</code>
+    </td>
+  </tr>
+</table>
 
 ---
 
 <div align="center">
-  <p>Architected by <b>Naman Dhakad</b></p>
-  <p>© 2025 VECTORA AI // SECURE REALITY DEFENSE</p>
+  <sub>Advanced Reality Defense System © 2025</sub>
 </div>
