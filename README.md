@@ -69,15 +69,15 @@ GROQ_API_KEY=your_key_here
 
 <table align="center" width="100%">
   <tr>
-    <td align="center" width="50%">
+    <td align="center" width="50%">. 
       <h3>NAMAN DHAKAD</h3>
       <p><i>Lead Engineer</i></p>
       <code>"The code is the law."</code>
     </td>
     <td align="center" width="50%">
       <h3>ARSH SHARMA</h3>
-      <p><i>Lead Logic Engineer</i></p>
-      <code>"We write the laws of verification."</code>
+      <p><i>Founder | Lead logic Engineer</i></p>
+      <code>"We don't follow system we define them."</code>
     </td>
   </tr>
 </table>
