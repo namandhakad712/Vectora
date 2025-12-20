@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+.DS_Store
+extension.zip
+extension.crx
+.vercel
+.env*.local
+temp.md
+tmp.md
+GEMINI-DOCS
+GROQ-DOCS

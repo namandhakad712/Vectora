@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VECTORA | UPLINK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      /* DARK MODE (Default) */
+      --bg: #050505;
+      --surface: #0a0a0a;
+      --primary: #00f3ff;
+      --secondary: #ff0055;
+      --text: #e0e0e0;
+      --muted: #666;
+      --border: rgba(255, 255, 255, 0.1);
+      --input-bg: rgba(255, 255, 255, 0.02);
+      --nav-bg: rgba(0, 0, 0, 0.8);
+
+      --font-head: 'Funnel Display', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f4f5;
+      --surface: #ffffff;
+      --primary: #0051ff;
+      --secondary: #ff0055;
+      --text: #111;
+      --muted: #555;
+      --border: rgba(0, 0, 0, 0.1);
+      --input-bg: rgba(0, 0, 0, 0.03);
+      --nav-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    @font-face {
+      font-family: 'AquireFont';
+      src: url('/static/aquire.woff') format('woff');
+    }
+
+    @font-face {
+      font-family: 'HeroFont';
+      src: url('/static/hero.ttf') format('truetype');
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      cursor: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      transition: background 0.5s, color 0.5s;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.04;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    [data-theme="light"] .noise {
+      mix-blend-mode: multiply;
+      opacity: 0.03;
+    }
+
+    #cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background: var(--text);
+      border-radius: 50%;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+
+    /* --- NAVIGATION --- */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 900;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      transition: 0.3s;
+    }
+
+    .nav-brand {
+      font-family: 'HeroFont', var(--font-head);
+      font-size: 1.5rem;
+      color: var(--text);
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .footer-logo {
+      font-family: 'HeroFont';
+      font-size: 2rem;
+      color: var(--text);
+    }
+
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      padding-bottom: 5px;
+      opacity: 0.7;
+      transition: 0.3s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--primary);
+      transition: 0.3s;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 20px;
+    }
+
+    /* MOB NAV */
+    .mobile-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .bar {
+      width: 25px;
+      height: 2px;
+      background: var(--text);
+      transition: 0.3s;
+    }
+
+    @media(max-width: 900px) {
+      .nav-menu {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        transform: translateY(-150%);
+        transition: 0.5s ease;
+      }
+
+      .nav-menu.active {
+        transform: translateY(0);
+      }
+
+      .mobile-toggle {
+        display: flex;
+      }
+    }
+
+    /* --- HERO --- */
+    .hero {
+      padding: 200px 5vw 100px;
+    }
+
+    .hero-title {
+      font-family: 'AquireFont';
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 50px;
+      text-transform: uppercase;
+    }
+
+    /* --- CONTACT GRID --- */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+    }
+
+    .info-panel {
+      border-right: 1px solid var(--border);
+      padding-right: 40px;
+    }
+
+    .label {
+      font-family: var(--font-mono);
+      color: var(--primary);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .val {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      color: var(--text);
+      margin-bottom: 40px;
+      display: block;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .val:hover {
+      color: var(--primary);
+      padding-left: 10px;
+    }
+
+    /* --- FORM --- */
+    .form-box {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 40px;
+      border-radius: 4px;
+    }
+
+    .input-group {
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .input-label {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-field {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 15px 0;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      outline: none;
+      transition: 0.3s;
+    }
+
+    .input-field:focus {
+      border-bottom-color: var(--primary);
+    }
+
+    textarea.input-field {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .btn-submit {
+      background: var(--text);
+      color: var(--bg);
+      font-family: var(--font-mono);
+      padding: 15px 40px;
+      border: none;
+      font-weight: bold;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      transition: 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 0 20px var(--primary);
+    }
+
+    @media(max-width: 900px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+        border: none;
+      }
+
+      .info-panel {
+        border: none;
+        padding: 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+        padding-bottom: 40px;
+      }
+
+      .hero-title {
+        font-size: 3.5rem;
+      }
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      padding: 80px 5vw;
+      border-top: 1px solid var(--border);
+      margin-top: 100px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-logo {
+      font-family: 'AquireFont';
+      font-size: 2rem;
+      color: var(--text);
+    }
+
+    .footer-links a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      margin-top: 10px;
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="noise"></div>
+  <div id="cursor"></div>
+
+  <nav>
+    <a href="/" class="nav-brand">VECTORA</a>
+    <button class="mobile-toggle" onclick="toggleMenu()">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </button>
+    <ul class="nav-menu">
+      <li><a href="/about" class="nav-link">About</a></li>
+      <li><a href="/extension" class="nav-link">Extension</a></li>
+      <li><a href="/guide" class="nav-link">Guide</a></li>
+      <li><a href="/check" class="nav-link">Checker</a></li>
+      <li><a href="/contact" class="nav-link active">Contact</a></li>
+      <li><button class="theme-btn" id="theme-toggle">☀</button></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <section class="hero">
+      <h1 class="hero-title">ESTABLISH<br><span
+          style="color: transparent; -webkit-text-stroke: 1px var(--text);">UPLINK</span></h1>
+
+      <div class="contact-grid">
+
+        <div class="info-panel">
+          <span class="label">SECURE CHANNEL</span>
+          <a href="mailto:contact@vectora.ai" class="val">contact@vectora.ai</a>
+
+          <span class="label">HQ COORDINATES</span>
+          <div class="val" style="font-size: 1.5rem;">Indore, MP<br>India</div>
+
+          <span class="label">SOCIAL FEED</span>
+          <a href="https://github.com/namandhakad712/Vectora" target="_blank" class="val" style="font-size: 1.2rem;">//
+            GITHUB</a>
+          <a href="#" class="val" style="font-size: 1.2rem;">// TWITTER</a>
+        </div>
+
+        <div class="form-box">
+          <form>
+            <div class="input-group">
+              <label class="input-label">IDENTITY_ALIAS</label>
+              <input type="text" class="input-field" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+              <label class="input-label">RETURN_ADDRESS (EMAIL)</label>
+              <input type="email" class="input-field" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+              <label class="input-label">TRANSMISSION_DATA</label>
+              <textarea class="input-field" placeholder="Message content..."></textarea>
+            </div>
+            <button type="button" class="btn-submit">INITIATE SEND</button>
+          </form>
+        </div>
+
+      </div>
+    </section>
+
+    <footer>
+      <div>
+        <div class="footer-logo">VECTORA</div>
+        <p style="color: var(--muted); margin-top: 20px; font-family: var(--font-mono);">SECURE REALITY DEFENSE</p>
+      </div>
+      <div class="footer-links">
+        <a href="/">HOME</a>
+        <a href="/about">ABOUT</a>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+  <script>
+    const lenis = new Lenis();
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    // --- THEME LOGIC ---
+    const themeBtn = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    root.setAttribute('data-theme', savedTheme);
+    themeBtn.textContent = savedTheme === 'dark' ? '☀' : '☾';
+
+    themeBtn.addEventListener('click', () => {
+      const current = root.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      themeBtn.textContent = next === 'dark' ? '☀' : '☾';
+    });
+
+    // --- MOBILE NAV ---
+    function toggleMenu() {
+      document.querySelector('.nav-menu').classList.toggle('active');
+    }
+
+    gsap.from(".hero-title", { y: 100, opacity: 0, duration: 1.5, ease: "power2.out", delay: 0.2 });
+    gsap.from(".contact-grid", { y: 50, opacity: 0, duration: 1, ease: "power2.out", delay: 0.5 });
+
+    const cursor = document.getElementById('cursor');
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+
+    window.addEventListener('mousemove', (e) => {
+      gsap.to(cursor, { opacity: 1, duration: 0.2, overwrite: "auto" });
+      cursorX(e.clientX);
+      cursorY(e.clientY);
+    });
+
+    document.querySelectorAll('a, button, input, textarea').forEach(el => {
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 2.5 }));
+      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1 }));
+    });
+  </script>
+</body>
+
+</html>

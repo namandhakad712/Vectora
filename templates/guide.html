@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VECTORA | PROTOCOLS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      /* DARK MODE (Default) */
+      --bg: #030303;
+      --surface: #0a0a0a;
+      --primary: #00f3ff;
+      --secondary: #ff0055;
+      --text: #e0e0e0;
+      --muted: #666;
+      --border: rgba(255, 255, 255, 0.1);
+      --step-bg: rgba(255, 255, 255, 0.02);
+      --nav-bg: rgba(0, 0, 0, 0.8);
+
+      --font-head: 'Funnel Display', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f4f5;
+      --surface: #ffffff;
+      --primary: #0051ff;
+      --secondary: #ff0055;
+      --text: #111;
+      --muted: #555;
+      --border: rgba(0, 0, 0, 0.1);
+      --step-bg: rgba(0, 0, 0, 0.03);
+      --nav-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    @font-face {
+      font-family: 'AquireFont';
+      src: url('/static/aquire.woff') format('woff');
+    }
+
+    @font-face {
+      font-family: 'HeroFont';
+      src: url('/static/hero.ttf') format('truetype');
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      cursor: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      transition: background 0.5s, color 0.5s;
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.04;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    [data-theme="light"] .noise {
+      mix-blend-mode: multiply;
+      opacity: 0.03;
+    }
+
+    #cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      background: var(--text);
+      border-radius: 50%;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      z-index: 10000;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+
+    /* --- NAVIGATION --- */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 900;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      transition: 0.3s;
+    }
+
+    .nav-brand {
+      font-family: 'HeroFont', var(--font-head);
+      font-size: 1.5rem;
+      color: var(--text);
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .footer-logo {
+      font-family: 'HeroFont';
+      font-size: 2rem;
+      color: var(--text);
+    }
+
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      padding-bottom: 5px;
+      opacity: 0.7;
+      transition: 0.3s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--primary);
+      transition: 0.3s;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 20px;
+    }
+
+    /* MOB NAV */
+    .mobile-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .bar {
+      width: 25px;
+      height: 2px;
+      background: var(--text);
+      transition: 0.3s;
+    }
+
+    @media(max-width: 900px) {
+      .nav-menu {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        transform: translateY(-150%);
+        transition: 0.5s ease;
+      }
+
+      .nav-menu.active {
+        transform: translateY(0);
+      }
+
+      .mobile-toggle {
+        display: flex;
+      }
+    }
+
+    /* --- GUIDE LAYOUT --- */
+    .guide-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 150px 5vw;
+    }
+
+    .guide-header {
+      margin-bottom: 100px;
+      text-align: left;
+    }
+
+    .guide-label {
+      font-family: var(--font-mono);
+      color: var(--secondary);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+
+    .guide-title {
+      font-family: 'AquireFont';
+      font-size: clamp(3rem, 10vw, 5rem);
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .step-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 30px;
+      margin-bottom: 80px;
+      position: relative;
+    }
+
+    .step-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 39px;
+      width: 2px;
+      height: 100%;
+      background: var(--border);
+      z-index: -1;
+    }
+
+    .step-item:last-child::before {
+      display: none;
+    }
+
+    .step-num {
+      width: 80px;
+      height: 80px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'AquireFont';
+      font-size: 2rem;
+      color: var(--muted);
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+    }
+
+    .step-item:hover .step-num {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .step-content {
+      background: var(--step-bg);
+      border: 1px solid var(--border);
+      padding: 30px;
+      border-radius: 10px;
+      position: relative;
+    }
+
+    .step-content h3 {
+      font-family: 'AquireFont';
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: var(--text);
+    }
+
+    .step-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .code-snippet {
+      display: inline-block;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+      padding: 10px 15px;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      margin: 15px 0;
+      font-size: 0.9rem;
+    }
+
+    [data-theme="light"] .code-snippet {
+      background: rgba(0, 0, 0, 0.05);
+      color: var(--primary);
+    }
+
+    .step-img {
+      width: 100%;
+      margin-top: 20px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      opacity: 0.8;
+      transition: 0.3s;
+    }
+
+    .step-img:hover {
+      opacity: 1;
+      border-color: var(--primary);
+    }
+
+    .btn-dl {
+      display: inline-block;
+      padding: 15px 30px;
+      background: var(--primary);
+      color: #000;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      margin-top: 20px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    [data-theme="light"] .btn-dl {
+      color: #fff;
+    }
+
+    .btn-dl:hover {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    @media(max-width: 600px) {
+      .step-item {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .step-item::before {
+        display: none;
+      }
+
+      .step-num {
+        margin: 0 auto;
+      }
+
+      .step-content {
+        text-align: center;
+      }
+    }
+
+    /* --- FOOTER --- */
+    footer {
+      padding: 80px 5vw;
+      border-top: 1px solid var(--border);
+      margin-top: 100px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 40px;
+    }
+
+    .footer-logo {
+      font-family: 'AquireFont';
+      font-size: 2rem;
+      color: var(--text);
+    }
+
+    .footer-links a {
+      display: block;
+      color: var(--muted);
+      text-decoration: none;
+      margin-top: 10px;
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="noise"></div>
+  <div id="cursor"></div>
+
+  <nav>
+    <a href="/" class="nav-brand">VECTORA</a>
+    <button class="mobile-toggle" onclick="toggleMenu()">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </button>
+    <ul class="nav-menu">
+      <li><a href="/about" class="nav-link">About</a></li>
+      <li><a href="/extension" class="nav-link">Extension</a></li>
+      <li><a href="/guide" class="nav-link active">Guide</a></li>
+      <li><a href="/check" class="nav-link">Checker</a></li>
+      <li><a href="/contact" class="nav-link">Contact</a></li>
+      <li><button class="theme-btn" id="theme-toggle">☀</button></li>
+    </ul>
+  </nav>
+
+  <main class="guide-wrapper">
+
+    <header class="guide-header">
+      <div class="guide-label">// MANUAL_OVERRIDE_V1</div>
+      <h1 class="guide-title">INSTALLATION<br>PROTOCOL</h1>
+    </header>
+
+    <div class="step-item">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3>ACQUIRE PAYLOAD</h3>
+        <p>Download the latest encryption package. This contains the packed extension logic.</p>
+        <a href="/static/vectora-extension.zip" class="btn-dl" download>DOWNLOAD .ZIP</a>
+        <p style="margin-top: 15px; font-size: 0.9rem; color: var(--secondary);">IMPORTANT: Unzip the folder completely
+          after downloading.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3>ACCESS EXTENSIONS</h3>
+        <p>Open your browser's control panel. Navigate to the extensions management interface.</p>
+        <div class="code-snippet">chrome://extensions</div>
+        <img
+          src="https://developer.chrome.com/static/docs/extensions/get-started/tutorial/hello-world/image/extensions-page.png"
+          class="step-img" alt="Chrome Extensions">
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3>DEVELOPER MODE</h3>
+        <p>Locate the toggle in the top-right corner. Activate "Developer mode" to enable sideloading capabilities.</p>
+      </div>
+    </div>
+
+    <div class="step-item">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3>INJECT SYSTEM</h3>
+        <p>Click "Load unpacked" and select the <strong>unzipped Vectora folder</strong>.</p>
+        <img src="https://developer.chrome.com/static/docs/extensions/get-started/tutorial/hello-world/image/icon.png"
+          class="step-img" style="width: 100px;" alt="Vectora Icon">
+        <p style="margin-top: 15px; color: var(--primary);">// INSTALLATION COMPLETE</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <div>
+      <div class="footer-logo">VECTORA</div>
+      <p style="color: var(--muted); margin-top: 20px; font-family: var(--font-mono);">SECURE REALITY DEFENSE</p>
+    </div>
+    <div class="footer-links">
+      <a href="/">HOME</a>
+      <a href="/about">ABOUT</a>
+    </div>
+  </footer>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.9/dist/lenis.min.js"></script>
+  <script>
+    gsap.registerPlugin(ScrollTrigger);
+    const lenis = new Lenis();
+    function raf(time) { lenis.raf(time); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+
+    // --- THEME LOGIC ---
+    const themeBtn = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    root.setAttribute('data-theme', savedTheme);
+    themeBtn.textContent = savedTheme === 'dark' ? '☀' : '☾';
+
+    themeBtn.addEventListener('click', () => {
+      const current = root.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      themeBtn.textContent = next === 'dark' ? '☀' : '☾';
+    });
+
+    // --- MOBILE NAV ---
+    function toggleMenu() {
+      document.querySelector('.nav-menu').classList.toggle('active');
+    }
+
+    gsap.from(".guide-header", { x: -50, opacity: 0, duration: 1.5, ease: "power2.out" });
+
+    gsap.utils.toArray('.step-item').forEach(item => {
+      gsap.from(item, {
+        scrollTrigger: { trigger: item, start: "top 80%" },
+        y: 50, opacity: 0, duration: 0.8
+      });
+    });
+
+    const cursor = document.getElementById('cursor');
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+
+    window.addEventListener('mousemove', (e) => {
+      gsap.to(cursor, { opacity: 1, duration: 0.2, overwrite: "auto" });
+      cursorX(e.clientX);
+      cursorY(e.clientY);
+    });
+    document.querySelectorAll('a, button, .step-item').forEach(el => {
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 3 }));
+      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1 }));
+    });
+  </script>
+</body>
+
+</html>

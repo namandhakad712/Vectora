@@ -18,7 +18,9 @@ chrome.runtime.onInstalled.addListener(() => {
 
 async function postToBackend(payload){
   try{
-    const resp = await fetch('https://YOUR_DOMAIN_HERE/ai-check', {
+    // For local testing: http://127.0.0.1:5001/ai-check
+    // For Vercel production: https://YOUR-VERCEL-APP.vercel.app/ai-check
+    const resp = await fetch('http://127.0.0.1:5001/ai-check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

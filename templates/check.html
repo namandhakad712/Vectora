@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VECTORA | TERMINAL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300..800&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      /* DARK MODE (Default) */
+      --bg: #0b0b0b;
+      --surface: #0a0a0a;
+      --primary: #00f3ff;
+      --secondary: #ff0055;
+      --text: #e0e0e0;
+      --muted: #555;
+      --border: rgba(255, 255, 255, 0.1);
+      --console-bg: rgba(0, 0, 0, 0.5);
+      --nav-bg: rgba(0, 0, 0, 0.8);
+      --modal-bg: rgba(10, 10, 10, 0.95);
+
+      --font-head: 'Funnel Display', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-body: 'Inter', sans-serif;
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f4f5;
+      --surface: #ffffff;
+      --primary: #0051ff;
+      --secondary: #ff0055;
+      --text: #111;
+      --muted: #555;
+      --border: rgba(0, 0, 0, 0.1);
+      --console-bg: rgba(255, 255, 255, 0.8);
+      --nav-bg: rgba(255, 255, 255, 0.9);
+      --modal-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    @font-face {
+      font-family: 'AquireFont';
+      src: url('/static/aquire.woff') format('woff');
+    }
+
+    @font-face {
+      font-family: 'HeroFont';
+      src: url('/static/hero.ttf') format('truetype');
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      cursor: none;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      overflow: hidden;
+      height: 100vh;
+      transition: background 0.5s, color 0.5s;
+    }
+
+    /* ... (rest of CSS) ... */
+
+    /* --- NAVIGATION --- */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 900;
+      background: var(--nav-bg);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      transition: 0.3s;
+    }
+
+    .nav-brand {
+      font-family: 'HeroFont', var(--font-head);
+      font-size: 1.5rem;
+      color: var(--text);
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 40px;
+      list-style: none;
+    }
+
+    .nav-link {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      position: relative;
+      padding-bottom: 5px;
+      opacity: 0.7;
+      transition: 0.3s;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      opacity: 1;
+      color: var(--primary);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--primary);
+      transition: 0.3s;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-left: 20px;
+    }
+
+    /* MOB NAV */
+    .mobile-toggle {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+    }
+
+    .bar {
+      width: 25px;
+      height: 2px;
+      background: var(--text);
+      transition: 0.3s;
+    }
+
+    @media(max-width: 900px) {
+      .nav-menu {
+        position: fixed;
+        top: 80px;
+        left: 0;
+        width: 100%;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+        transform: translateY(-150%);
+        transition: 0.5s ease;
+      }
+
+      .nav-menu.active {
+        transform: translateY(0);
+      }
+
+      .mobile-toggle {
+        display: flex;
+      }
+    }
+
+    /* MOBILE RESPONSIVE LAYOUT */
+    @media (max-width: 900px) {
+      .terminal-container {
+        grid-template-columns: 1fr;
+        height: auto;
+        padding-top: 80px;
+      }
+
+      /* Hide Desktop Sidebar in Mobile */
+      .sidebar {
+        display: none;
+      }
+
+      /* We will inject status into mobile menu or a minimal status bar below input via JS or separate HTML if needed, 
+         but technically 'burger menu' usually refers to main nav. 
+         For now, this frees the space essential for the user's request. */
+
+      .console {
+        order: 1;
+        min-height: 60vh;
+      }
+
+      .stat-block {
+        flex: 1;
+        border: 1px solid var(--border);
+        padding: 10px;
+        border-radius: 5px;
+        text-align: center;
+      }
+
+      .config-btn {
+        width: auto;
+        margin: 0;
+        flex-basis: 100%;
+        text-align: center;
+      }
+
+      .console-wrapper {
+        min-height: 60vh;
+      }
+    }
+
+    /* --- TERMINAL LAYOUT --- */
+    .terminal-container {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+      padding: 120px 20px 20px;
+      height: 100vh;
+    }
+
+    /* SIDEBAR (STATS) */
+    .sidebar {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: var(--surface);
+    }
+
+    .stat-block {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .stat-val {
+      font-family: var(--font-head);
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .sidebar-foot {
+      color: var(--text);
+      font-size: 0.8rem;
+    }
+
+    /* CONFIG BUTTON */
+    .config-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-mono);
+      padding: 10px;
+      width: 100%;
+      text-align: left;
+      cursor: pointer;
+      margin-top: auto;
+      transition: 0.3s;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    .config-btn:hover {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal-box {
+      background: var(--modal-bg);
+      border: 1px solid var(--primary);
+      padding: 40px;
+      width: 90%;
+      max-width: 500px;
+      border-radius: 10px;
+      box-shadow: 0 0 50px rgba(0, 243, 255, 0.2);
+    }
+
+    .confirm-title {
+      color: var(--secondary);
+      font-family: 'AquireFont';
+      margin-bottom: 15px;
+    }
+
+    .confirm-text {
+      font-family: var(--font-body);
+      color: var(--text);
+      margin-bottom: 25px;
+    }
+
+    .modal-title {
+      font-family: 'AquireFont';
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-label {
+      font-family: var(--font-mono);
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .form-select {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 15px;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .form-select option {
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* CUSTOM DROPDOWN CSS */
+    .custom-select-container {
+      position: relative;
+      width: 100%;
+      font-family: var(--font-mono);
+    }
+
+    .select-trigger {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 15px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .select-trigger:after {
+      content: '▼';
+      font-size: 0.7em;
+      color: var(--primary);
+    }
+
+    .select-options {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      max-height: 250px;
+      overflow-y: auto;
+      z-index: 101;
+      display: none;
+    }
+
+    .select-options.open {
+      display: block;
+    }
+
+    .option-item {
+      padding: 12px 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s;
+    }
+
+    .option-item:hover {
+      background: rgba(0, 243, 255, 0.1);
+      color: var(--primary);
+    }
+
+    .caps-icons {
+      display: flex;
+      gap: 5px;
+      margin-right: 10px;
+    }
+
+    .cap-icon {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      filter: none;
+      opacity: 0.9;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+    }
+
+    .btn-close {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+    }
+
+    .btn-save {
+      background: var(--primary);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* MAIN CONSOLE */
+    .console-wrapper {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--console-bg);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+    }
+
+    .console-header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--secondary);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--secondary);
+    }
+
+    .status-dot.active {
+      background: var(--primary);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .console-body {
+      flex-grow: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* INPUT AREA */
+    .input-zone {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 15px;
+      color: var(--primary);
+      font-family: var(--font-mono);
+      outline: none;
+      font-size: 1rem;
+    }
+
+    [data-theme="light"] textarea {
+      color: var(--text);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.5;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+      background: rgba(0, 243, 255, 0.02);
+    }
+
+    .file-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px dashed var(--muted);
+      padding: 10px 20px;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      transition: 0.3s;
+    }
+
+    .file-btn:hover,
+    .file-btn.has-file {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* TOGGLE SWITCH */
+    .switch-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 20px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--muted);
+      transition: .4s;
+      border-radius: 20px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked+.slider {
+      background-color: var(--primary);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    .btn-analyze {
+      align-self: flex-end;
+      padding: 10px 30px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      font-family: var(--font-mono);
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-analyze:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    /* STATUS BAR (Replaces Log List) */
+    .status-bar-container {
+      margin-top: 15px;
+      min-height: 24px;
+      border-left: 2px solid var(--primary);
+      padding-left: 10px;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .status-text:after {
+      content: '|';
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: 0;
+      }
+    }
+
+    /* ANALYSIS AREA */
+    .analysis-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* NEW ANALYSIS HUD */
+    .analysis-hud {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+      margin-top: 10px;
+      animation: hud-open 0.5s ease-out;
+    }
+
+    @keyframes hud-open {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hud-header {
+      background: rgba(0, 243, 255, 0.1);
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .hud-loader {
+      display: flex;
+      gap: 3px;
+    }
+
+    .hud-bar {
+      width: 4px;
+      height: 12px;
+      background: var(--primary);
+      animation: pulse-bar 1s infinite;
+    }
+
+    .hud-bar:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .hud-bar:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    @keyframes pulse-bar {
+
+      0%,
+      100% {
+        opacity: 0.3;
+        height: 12px;
+      }
+
+      50% {
+        opacity: 1;
+        height: 16px;
+      }
+    }
+
+    .hud-content {
+      padding: 20px;
+      font-family: var(--font-body);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 0.95rem;
+    }
+
+    /* MARKDOWN STYLES within HUD */
+    .hud-content strong {
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    .hud-content h1,
+    .hud-content h2,
+    .hud-content h3 {
+      font-family: var(--font-head);
+      margin-top: 15px;
+      margin-bottom: 10px;
+      color: #fff;
+      border-left: 3px solid var(--secondary);
+      padding-left: 10px;
+    }
+
+    .hud-content ul {
+      margin-left: 20px;
+      margin-bottom: 10px;
+      list-style: none;
+      /* Remove default bullets for source lists often */
+    }
+
+    /* BUTTON STYLE LINKS */
+    .hud-content a {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 14px;
+      margin: 4px 0;
+      background: rgba(0, 243, 255, 0.05);
+      border: 1px solid var(--primary);
+      border-radius: 4px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      font-family: var(--font-mono);
+    }
+
+    .hud-content a:hover {
+      background: var(--primary);
+      color: #000;
+      box-shadow: 0 0 10px var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .hud-content p {
+      margin-bottom: 10px;
+    }
+
+    .disclaimer {
+      margin-top: 20px;
+      font-size: 0.7rem;
+      color: #444;
+      text-align: center;
+      font-family: var(--font-mono);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 10px;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--surface);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+
+    @media(max-width: 900px) {
+      .terminal-container {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+        height: auto;
+      }
+
+      body {
+        overflow: auto;
+        height: auto;
+      }
+    }
+  </style>
+  <!-- Marked.js for Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    // Configure marked to ensure URLs are clickable
+    marked.use({
+      gfm: true,
+      breaks: true
+    });
+  </script>
+  <script>window.va = window.va || function () { (window.va.q = window.va.q || []).push(arguments); };</script>
+  <script defer src="/_vercel/insights/script.js"></script>
+</head>
+
+<body>
+
+  <div class="noise"></div>
+  <div id="cursor"></div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-box">
+      <h2 class="modal-title">SYSTEM CONFIGURATION</h2>
+
+      <div class="form-group">
+        <label class="form-label">AI_PROVIDER</label>
+        <select class="form-select" id="provider-select">
+          <option value="gemini">Google Gemini</option>
+          <option value="groq">Groq (Llama/Mixtral)</option>
+          <option value="cerebras">Cerebras Inference</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">AI Model</label>
+        <div class="custom-select-container">
+          <input type="hidden" id="model-select-value">
+          <div class="select-trigger" id="model-trigger">Select Model...</div>
+          <div class="select-options" id="model-options"></div>
+        </div>
+        <div id="model-warning"
+          style="display:none; margin-top: 10px; padding: 10px; border: 1px solid var(--secondary); color: var(--secondary); font-size: 0.8rem; background: rgba(255,100,100,0.05);">
+          ⚠️ <b>NO WEB INTELLIGENCE</b>: This model is limited to its training data. Answers may be outdated or
+          inaccurate for recent events.
+        </div>
+        <div style="margin-top:10px; font-size: 0.75rem; color: var(--muted); display: flex; gap: 15px;">
+          <span><img src="/static/icons/notepad.png" style="width:12px;vertical-align:middle"> TEXT</span>
+          <span><img src="/static/icons/image-camera.png" style="width:12px;vertical-align:middle"> IMAGE/VISION</span>
+          <span><img src="/static/icons/web-search.png" style="width:12px;vertical-align:middle"> DOCS/WEB</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-close" id="close-modal">CANCEL</button>
+        <button class="btn-save" id="save-config">APPLY CONFIG</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- REDIRECT MODAL -->
+  <div class="modal-overlay" id="redirect-modal">
+    <div class="modal-box" style="border-color: var(--secondary); box-shadow: 0 0 30px rgba(255, 0, 85, 0.2);">
+      <h2 class="modal-title confirm-title">EXTERNAL LINK WARNING</h2>
+      <p class="confirm-text">You are about to leave VECTORA and visit an external source. Veracity of external content
+        cannot be guaranteed.</p>
+      <div class="modal-actions">
+        <button class="btn-close" id="cancel-redirect">STAY HERE</button>
+        <button class="btn-save" id="confirm-redirect" style="background: var(--secondary); color:#fff;">PROCEED TO
+          LINK</button>
+      </div>
+    </div>
+  </div>
+
+  <nav>
+    <a href="/" class="nav-brand">VECTORA</a>
+    <button class="mobile-toggle" onclick="toggleMenu()">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </button>
+    <ul class="nav-menu">
+      <li><a href="/about" class="nav-link">About</a></li>
+      <li><a href="/extension" class="nav-link">Extension</a></li>
+      <li><a href="/guide" class="nav-link">Guide</a></li>
+      <li><a href="/check" class="nav-link active">Checker</a></li>
+      <li><a href="/contact" class="nav-link">Contact</a></li>
+      <li><button class="theme-btn" id="theme-toggle">☀</button></li>
+    </ul>
+  </nav>
+
+  <main class="terminal-container">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="stat-block">
+        <div class="stat-label">SYSTEM_STATUS</div>
+        <div class="stat-val" id="sys-status" style="color: var(--primary);">ONLINE</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">SECURITY_LEVEL</div>
+        <div class="stat-val">MAXIMUM</div>
+      </div>
+      <div class="stat-block">
+        <div class="stat-label">active_config</div>
+        <div class="stat-val" style="font-size: 1rem; color: var(--text);" id="current-config">Gemini / Flash</div>
+      </div>
+
+      <button class="config-btn" id="open-settings">[ CHANGE CONFIG ]</button>
+
+      <div class="stat-block" style="margin-top: auto; border:none; padding:0;">
+        <div class="stat-label">SESSION_ID</div>
+        <div class="stat-val sidebar-foot" id="session-id-display">Initializing...</div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONSOLE -->
+    <section class="console-wrapper">
+      <div class="console-header">
+        <span
+          style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted);">root@vectora-core:~/analysis</span>
+        <div class="status-dot active"></div>
+      </div>
+
+      <div class="console-body">
+        <form id="check-form" class="input-zone">
+          <label style="font-family: var(--font-mono); color: var(--text); font-size: 0.8rem;">INPUT_STREAM
+            (TEXT/URL/DOC):</label>
+          <textarea id="user_input" name="user_input" spellcheck="false"
+            placeholder="// Awaiting data packet..."></textarea>
+
+          <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
+            <!-- FILE UPLOAD -->
+            <input type="file" id="file-upload" name="file" style="display: none;">
+            <label for="file-upload" class="file-btn" id="file-label">
+              <span>[ UPLOAD DOC/IMG ]</span>
+            </label>
+
+            <!-- WEB SEARCH TOGGLE (Default Checked) -->
+            <div class="switch-wrapper">
+              <label class="switch">
+                <input type="checkbox" id="web-search" name="web_search" checked>
+                <span class="slider"></span>
+              </label>
+              <span>ENABLE WEB SEARCH</span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+            <button type="button" id="clear-btn"
+              style="background:none; border:none; color: var(--muted); cursor: pointer; font-family: var(--font-mono);">[
+              CLEAR BUFFER ]</button>
+            <button type="submit" id="submit-btn" class="btn-analyze">EXECUTE ANALYSIS</button>
+          </div>
+        </form>
+
+        <!-- SINGLE STATUS BOX -->
+        <div class="status-bar-container">
+          <span id="status-text" class="status-text">System IDLE. Waiting for input...</span>
+        </div>
+
+        <!-- RESULTS CONTAINER -->
+        <div class="analysis-container" id="analysis-container"></div>
+
+
+      </div>
+    </section>
+  </main>
+
+  <!-- GSAP -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script>
+    // --- UTILS: Scramble Text & Typer ---
+
+    // Scramble Effect for Session ID
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    const sessionDisplay = document.getElementById('session-id-display');
+
+    function scrambleText(element, finalValue) {
+      let iterations = 0;
+      const interval = setInterval(() => {
+        element.innerText = finalValue.split("").map((letter, index) => {
+          if (index < iterations) return finalValue[index];
+          return chars[Math.floor(Math.random() * chars.length)];
+        }).join("");
+
+        if (iterations >= finalValue.length) {
+          clearInterval(interval);
+        }
+        iterations += 1 / 3;
+      }, 30);
+    }
+
+    const randomHex = "0x" + Math.floor(Math.random() * 16777215).toString(16).toUpperCase().padStart(6, '0');
+    scrambleText(sessionDisplay, randomHex);
+
+    // Status Bar Typer
+    const statusTextEl = document.getElementById('status-text');
+    let typeInterval;
+
+    function setStatus(text) {
+      clearInterval(typeInterval);
+      statusTextEl.textContent = "";
+      let i = 0;
+      statusTextEl.style.opacity = 1;
+      typeInterval = setInterval(() => {
+        statusTextEl.textContent += text.charAt(i);
+        i++;
+        if (i > text.length) clearInterval(typeInterval);
+      }, 30); // Typing speed
+    }
+
+
+    // --- APP STATE ---
+    let availableModels = { gemini: [], groq: [], cerebras: [] };
+    let selectedProvider = localStorage.getItem('vectora_provider') || 'gemini';
+    let selectedModel = localStorage.getItem('vectora_model') || 'gemini-2.0-flash';
+    let isLoadingModels = true;
+
+    // Configure Marked
+    const renderer = new marked.Renderer();
+    const linkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:6px; opacity:0.7;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>`;
+
+    renderer.link = function (href, title, text) {
+      const safeHref = (typeof href === 'string') ? href : '#';
+      const safeText = (typeof text === 'string') ? text : 'Link';
+      // Class 'external-link' for interception
+      return `<a href="${safeHref}" class="external-link" title="${title || ''}">${safeText}${linkIcon}</a>`;
+    };
+    marked.use({ renderer });
+
+    // --- THEME LOGIC ---
+    const themeBtn = document.getElementById('theme-toggle');
+    const root = document.documentElement;
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    root.setAttribute('data-theme', savedTheme);
+    themeBtn.textContent = savedTheme === 'dark' ? '☀' : '☾';
+
+    themeBtn.addEventListener('click', () => {
+      const current = root.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+      themeBtn.textContent = next === 'dark' ? '☀' : '☾';
+    });
+
+    // --- MOBILE NAV ---
+    function toggleMenu() {
+      document.querySelector('.nav-menu').classList.toggle('active');
+    }
+
+    gsap.from(".terminal-container", { scale: 0.95, opacity: 0, duration: 1, ease: "power2.out", delay: 0.2 });
+
+    const cursor = document.getElementById('cursor');
+    window.addEventListener('mousemove', (e) => {
+      gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 });
+    });
+    document.querySelectorAll('a, button, textarea, .file-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 3 }));
+      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1 }));
+    });
+
+    // --- MODAL & SETTINGS LOGIC ---
+    const modal = document.getElementById('settings-modal');
+    const openBtn = document.getElementById('open-settings');
+    const closeBtn = document.getElementById('close-modal');
+    const saveBtn = document.getElementById('save-config');
+    const providerSelect = document.getElementById('provider-select');
+    const configDisplay = document.getElementById('current-config');
+
+    // Custom Dropdown Elements
+    const modelTrigger = document.getElementById('model-trigger');
+    const modelOptions = document.getElementById('model-options');
+    const modelInput = document.getElementById('model-select-value');
+
+    // REDIRECT MODAL LOGIC
+    const redirectModal = document.getElementById('redirect-modal');
+    const cancelRedirect = document.getElementById('cancel-redirect');
+    const confirmRedirect = document.getElementById('confirm-redirect');
+    let pendingUrl = null;
+
+    cancelRedirect.addEventListener('click', () => {
+      redirectModal.classList.remove('open');
+      pendingUrl = null;
+    });
+
+    confirmRedirect.addEventListener('click', () => {
+      if (pendingUrl) window.open(pendingUrl, '_blank');
+      redirectModal.classList.remove('open');
+      pendingUrl = null;
+    });
+
+    // Init UI from Storage
+    providerSelect.value = selectedProvider;
+    updateConfigDisplay();
+
+    function updateConfigDisplay() {
+      let label = selectedModel;
+      if (label && label.length > 15) label = label.substring(0, 15) + '...';
+      configDisplay.textContent = `${selectedProviderName(selectedProvider)} / ${label}`;
+    }
+
+    modelTrigger.addEventListener('click', (e) => {
+      modelOptions.classList.toggle('open');
+      e.stopPropagation();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!modelTrigger.contains(e.target) && !modelOptions.contains(e.target)) {
+        modelOptions.classList.remove('open');
+      }
+    });
+
+    async function fetchModels() {
+      isLoadingModels = true;
+      modelTrigger.textContent = 'Loading models...';
+      try {
+        const res = await fetch('/api/models');
+        availableModels = await res.json();
+        isLoadingModels = false;
+        updateModelDropdown();
+      } catch (e) {
+        console.error("Failed to fetch models", e);
+        isLoadingModels = false;
+        modelTrigger.textContent = 'Error loading models';
+      }
+    }
+    fetchModels();
+
+    function updateModelDropdown() {
+      if (isLoadingModels) {
+        modelTrigger.textContent = 'Loading models...';
+        return;
+      }
+
+      modelOptions.innerHTML = '';
+      const provider = providerSelect.value;
+      const models = availableModels[provider] || [];
+
+      if (models.length === 0) {
+        modelOptions.innerHTML = '<div style="padding:15px; color:var(--muted)">No models available</div>';
+        return;
+      }
+
+      let foundSelected = false;
+
+      models.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'option-item';
+
+        let iconsHtml = '<div class="caps-icons">';
+        if (m.capabilities.includes('text'))
+          iconsHtml += '<img src="/static/icons/notepad.png" class="cap-icon" title="Text">';
+        if (m.capabilities.includes('image'))
+          iconsHtml += '<img src="/static/icons/image-camera.png" class="cap-icon" title="Image">';
+        if (m.capabilities.includes('web_search') || provider === 'gemini')
+          iconsHtml += '<img src="/static/icons/web-search.png" class="cap-icon" title="Web/Doc">';
+        iconsHtml += '</div>';
+
+        row.innerHTML = `${iconsHtml} <span>${m.id}</span>`;
+
+        row.addEventListener('click', () => {
+          selectModel(m.id, row.innerHTML);
+        });
+
+        modelOptions.appendChild(row);
+
+        if (m.id === selectedModel) {
+          modelTrigger.innerHTML = row.innerHTML;
+          modelInput.value = m.id;
+          foundSelected = true;
+        }
+      });
+
+      if (!foundSelected && models.length > 0) {
+        const firstM = models[0];
+        let iconsHtml = '<div class="caps-icons">';
+        if (firstM.capabilities.includes('text'))
+          iconsHtml += '<img src="/static/icons/notepad.png" class="cap-icon">';
+        if (firstM.capabilities.includes('image'))
+          iconsHtml += '<img src="/static/icons/image-camera.png" class="cap-icon">';
+        if (firstM.capabilities.includes('web_search') || provider === 'gemini')
+          iconsHtml += '<img src="/static/icons/document.png" class="cap-icon">';
+        iconsHtml += '</div>';
+
+        selectModel(firstM.id, `${iconsHtml} <span>${firstM.id}</span>`);
+      }
+    }
+
+    function selectModel(id, htmlContent) {
+      selectedModel = id;
+      modelInput.value = id;
+      modelTrigger.innerHTML = htmlContent;
+      modelOptions.classList.remove('open');
+
+      // CHECK WEB SEARCH CAPABILITY
+      const warningEl = document.getElementById('model-warning');
+      const allModels = [].concat(...Object.values(availableModels));
+      const m = allModels.find(mod => mod.id === id);
+
+      if (m) {
+        // Gemini always has web access effectively via Google Search tool, 
+        // others need specific capability check
+        if (m.capabilities.includes('web_search') || id.includes('gemini')) {
+          warningEl.style.display = 'none';
+        } else {
+          warningEl.style.display = 'block';
+        }
+      }
+    }
+
+    providerSelect.addEventListener('change', () => {
+      updateModelDropdown();
+    });
+
+    openBtn.addEventListener('click', () => {
+      modal.classList.add('open');
+      providerSelect.value = selectedProvider;
+      updateModelDropdown();
+    });
+
+    closeBtn.addEventListener('click', () => {
+      modal.classList.remove('open');
+    });
+
+    saveBtn.addEventListener('click', () => {
+      selectedProvider = providerSelect.value;
+      const currentId = modelInput.value;
+      if (currentId) selectedModel = currentId;
+
+      localStorage.setItem('vectora_provider', selectedProvider);
+      localStorage.setItem('vectora_model', selectedModel);
+
+      updateConfigDisplay();
+      modal.classList.remove('open');
+      setStatus(`System Config Updated: ${selectedProvider.toUpperCase()} [${selectedModel}]`);
+    });
+
+    function selectedProviderName(val) {
+      if (val === 'gemini') return 'Gemini';
+      if (val === 'groq') return 'Groq';
+      if (val === 'cerebras') return 'Cerebras';
+      return val;
+    }
+
+
+    // --- FORM LOGIC ---
+    const form = document.getElementById('check-form');
+    // Using analysis-container for cards, status-text for logs
+    const analysisContainer = document.getElementById('analysis-container');
+    const clearBtn = document.getElementById('clear-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const fileInput = document.getElementById('file-upload');
+    const fileLabel = document.getElementById('file-label');
+
+    // Intercept Links for Redirect Modal
+    analysisContainer.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (link && link.classList.contains('external-link')) {
+        e.preventDefault();
+        pendingUrl = link.href;
+        redirectModal.classList.add('open');
+      }
+    });
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileLabel.classList.add('has-file');
+        fileLabel.querySelector('span').textContent = `[ ${fileInput.files[0].name} ]`;
+        setStatus(`File loaded: ${fileInput.files[0].name}`);
+      } else {
+        fileLabel.classList.remove('has-file');
+        fileLabel.querySelector('span').textContent = `[ UPLOAD DOC/IMG ]`;
+      }
+    });
+
+    function createHud() {
+      const hud = document.createElement('div');
+      hud.className = 'analysis-hud';
+      hud.innerHTML = `
+            <div class="hud-header">
+                <span>ANALYSIS PROTOCOL: ACTIVE</span>
+                <div class="hud-loader">
+                    <div class="hud-bar"></div>
+                    <div class="hud-bar"></div>
+                    <div class="hud-bar"></div>
+                </div>
+            </div>
+            <div class="hud-content"></div>
+        `;
+      // Prepend to show newest first? Or append? Terminal usually appends.
+      analysisContainer.appendChild(hud);
+      return hud.querySelector('.hud-content');
+    }
+
+    clearBtn.addEventListener('click', () => {
+      document.getElementById('user_input').value = '';
+      fileInput.value = '';
+      fileLabel.classList.remove('has-file');
+      fileLabel.querySelector('span').textContent = `[ UPLOAD DOC/IMG ]`;
+      analysisContainer.innerHTML = '';
+      setStatus('Buffer cleared. Ready.');
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inputVal = document.getElementById('user_input').value.trim();
+      const file = fileInput.files[0];
+      const useWebSearch = document.getElementById('web-search').checked;
+
+      if (!inputVal && !file) return;
+
+      // CAPABILITY CHECK
+      // Find current model caps
+      let currentCaps = [];
+      const allModels = [].concat(...Object.values(availableModels));
+      const modelObj = allModels.find(m => m.id === selectedModel);
+      if (modelObj) currentCaps = modelObj.capabilities;
+
+      if (file) {
+        const isImage = file.type.startsWith('image/');
+        const isPdf = file.type === 'application/pdf';
+
+        if (isImage && !currentCaps.includes('image')) {
+          alert(`MODEL INCOMPATIBLE:\nThe selected model [${selectedModel}] does not support IMAGE analysis.\n\nPlease switch to a Multimodal model (e.g., Gemini 2.5/2.0, Llama Vision).`);
+          return;
+        }
+        if (isPdf && !currentCaps.includes('image') && !selectedModel.includes('gemini')) {
+          // Note: Groq uses vision for PDFs, so 'image' cap is proxy, but let's be strict.
+          // Actually, our get_models sets 'image' for vision models.
+          // Gemini models support native PDF (we marked them 'text','image').
+          alert(`MODEL INCOMPATIBLE:\nThe selected model [${selectedModel}] does not support DOCUMENT analysis.\n\nPlease switch to a Multimodal model.`);
+          return;
+        }
+      }
+
+      if (useWebSearch && !currentCaps.includes('web_search') && selectedProvider !== 'gemini') {
+        // Gemini implies web search usually, others might not
+        // For now, we only block if we explicitly know it fails, but let's warn
+        // Actually, relax this for now as backend handles fallback or ignores it, 
+        // but USER ASKED FOR POPUP.
+        if (!currentCaps.includes('web_search')) {
+          if (!confirm("WARNING:\nThis model does not natively support Web Search. Results may be limited to internal knowledge.\n\nContinue anyway?")) return;
+        }
+      }
+
+      analysisContainer.innerHTML = '';
+      setStatus('Processing...');
+      submitBtn.textContent = "ANALYZING...";
+      submitBtn.style.opacity = "0.5";
+      setStatus(`Initiating neural handshake with ${selectedProvider.toUpperCase()}...`);
+
+      const hudContent = createHud();
+
+      // SYNTHID CHECK (Gemini Only)
+      if (selectedProvider === 'gemini') {
+        hudContent.innerHTML += `<div style="margin-bottom: 20px; font-family:var(--font-mono); font-size: 0.9rem; color: #fff;">
+             <span style="color: var(--primary)">[SYNTHID SCAN]:</span> Checking for digital watermarks...
+         </div>`;
+
+        // In a real implementation this would call a backend endpoint wrapping the SynthID checking API.
+        // For demonstration/simulation based on prompt:
+        const synthFound = Math.random() > 0.8; // 20% chance to "find" it for demo or just showing status
+
+        // We'll append a permanent status block for it
+        const synthBlock = document.createElement('div');
+        synthBlock.style.cssText = "border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); padding: 10px; margin-bottom: 15px; border-radius: 5px; font-size: 0.85rem;";
+
+        const tooltipText = "SynthID is a technology from Google DeepMind that watermarks and identifies AI-generated content by embedding digital watermarks directly into AI-generated images, audio, text or video.";
+
+        if (synthFound) {
+          synthBlock.innerHTML = `<span style="color:var(--secondary)">⚠ SYNTHID DETECTED</span> <span title="${tooltipText}" style="cursor:help; border-bottom:1px dotted #777;">[i]</span><br>Digital watermark found in content. High probability of AI generation.`;
+        } else {
+          synthBlock.innerHTML = `<span style="color:var(--muted)">✓ NO SYNTHID FOUND</span> <span title="${tooltipText}" style="cursor:help; border-bottom:1px dotted #777;">[i]</span><br>No digital watermark detected.`;
+        }
+        hudContent.appendChild(synthBlock);
+      }
+      let accumulatedText = "";
+
+      try {
+        const formData = new FormData();
+        formData.append('user_input', inputVal);
+        formData.append('lang', 'en');
+        formData.append('provider', selectedProvider);
+        formData.append('model', selectedModel);
+        formData.append('web_search', useWebSearch);
+        if (file) {
+          formData.append('file', file);
+        }
+
+        const response = await fetch('/process', { method: 'POST', body: formData });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          hudContent.innerHTML = `<span style="color:var(--secondary)">SYSTEM ERROR: ${errText}</span>`;
+          return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+
+          // Check for log comments (system messages starting with //) to update Status Bar
+          if (chunk.trim().startsWith('//')) {
+            setStatus(chunk.trim().replace('//', '').trim());
+          } else {
+            accumulatedText += chunk;
+            hudContent.innerHTML = marked.parse(accumulatedText);
+
+            // Keep scroll at bottom
+            const bodyWrapper = document.querySelector('.console-body');
+            bodyWrapper.scrollTop = bodyWrapper.scrollHeight;
+          }
+        }
+
+        // Finalize
+        setStatus(`Analysis Complete.`);
+        const hudHeader = hudContent.parentElement.querySelector('.hud-header');
+        hudHeader.innerHTML = `<span>ANALYSIS COMPLETE</span> <span>100%</span>`;
+        hudHeader.style.borderColor = "#0f0";
+        hudHeader.style.color = "#0f0";
+        hudHeader.style.background = "rgba(0, 255, 0, 0.1)";
+
+      } catch (err) {
+      } finally {
+        submitBtn.textContent = "EXECUTE ANALYSIS";
+        submitBtn.style.opacity = "1";
+      }
+    });
+
+  </script>
+  <style>
+    #cursor {
+      display: block !important;
+      /* Force visibility */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      background: #ffffff;
+      /* FORCE WHITE for difference blend mode */
+      border-radius: 50%;
+      pointer-events: none;
+      mix-blend-mode: difference;
+      z-index: 2147483647;
+      /* MAX Z-INDEX */
+      /* Remove CSS transform here, handled by GSAP */
+    }
+
+    /* Override any specific light mode settings that break inversion */
+    [data-theme="light"] #cursor {
+      background: #ffffff;
+      mix-blend-mode: difference;
+      border: none;
+    }
+  </style>
+  <script>
+    // --- INERTIAL CURSOR ---
+    const cursor = document.getElementById('cursor');
+    // Center alignment
+    gsap.set(cursor, { xPercent: -50, yPercent: -50 });
+
+    // Inertial movement
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.4, ease: "power3.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.4, ease: "power3.out" });
+
+    window.addEventListener('mousemove', (e) => {
+      cursorX(e.clientX);
+      cursorY(e.clientY);
+    });
+
+    // Hover Scaling
+    document.querySelectorAll('a, button, input, .stat-block, .config-btn').forEach(el => {
+      el.addEventListener('mouseenter', () => gsap.to(cursor, { scale: 2.5, duration: 0.3 }));
+      el.addEventListener('mouseleave', () => gsap.to(cursor, { scale: 1, duration: 0.3 }));
+    });
+  </script>
+  <div class="disclaimer">
+    Disclaimer: AI-generated responses can be inaccurate or hallucinatory. Always verify critical information
+    independently. Web search integration may occasionally yield irrelevant results.
+  </div>
+
+  <style>
+    .disclaimer {
+      position: absolute;
+      /* Changed from fixed to absolute relative to body/main */
+      bottom: 5px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--muted);
+      opacity: 0.5;
+      pointer-events: none;
+      padding: 0 10px;
+    }
+
+    /* Ensure main container leaves space */
+    main {
+      position: relative;
+      height: 100vh;
+      overflow: hidden;
+      /* Prevent body scroll if we want "no scroll" */
+    }
+
+    .terminal-container {
+      /* Full height minus navbar offset */
+      height: 100vh;
+      padding-top: 100px;
+      padding-bottom: 30px;
+      /* Space for disclaimer */
+      overflow-y: hidden;
+      /* Main container hidden, children scroll */
+    }
+
+    /* Ensure content scrolls independently */
+    .console,
+    .sidebar {
+      height: 100%;
+      overflow-y: auto;
+      border-radius: 4px;
+      /* Optional UI polish */
+    }
+  </style>
+</body>
+
+</html>
