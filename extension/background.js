@@ -1,13 +1,45 @@
 // background.js - Manifest V3 service worker
 
-// Inject notification UI and show AI check result
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: 'vectora-check-text',
+    title: 'Check AI Authenticity',
+    contexts: ['selection']
+  });
+  chrome.contextMenus.create({
+    id: 'vectora-check-image',
+    title: 'Check AI Authenticity',
+    contexts: ['image']
+  });
+});
+
+async function postToBackend(payload){
+  try{
+    const endpoint = 'https://vectora.vercel.app/ai-check' || 'http://127.0.0.1:5001/ai-check';
+    const resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      timeout: 15000
+    });
+    
+    if(!resp.ok){
+      return { error: 'Server error: ' + resp.status, ai_percent: 50, message: 'Unable to reach analysis server' };
+    }
+    const data = await resp.json();
+    return data || { error: 'No response', ai_percent: 50, message: 'Analysis unavailable' };
+  }catch(e){
+    return { error: String(e), ai_percent: 50, message: 'Network error - please try again' };
+  }
+}
+
 function showNotification(tabId, aiPercent, message) {
-  const notifCode = `
-    (function() {
-      if (document.getElementById('vectora-notification')) return; // Prevent duplicates
-      
+  chrome.scripting.executeScript({
+    target: { tabId: tabId },
+    func: (percent, msg) => {
+      // Create and inject styles
       const style = document.createElement('style');
-      style.textContent = \`
+      style.textContent = `
         #vectora-notification {
           position: fixed;
           top: 24px;
@@ -25,7 +57,6 @@ function showNotification(tabId, aiPercent, message) {
           backdrop-filter: blur(8px);
           animation: vectoraSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        
         @keyframes vectoraSlideIn {
           from {
             opacity: 0;
@@ -36,7 +67,6 @@ function showNotification(tabId, aiPercent, message) {
             transform: translateX(0) translateY(0);
           }
         }
-        
         .vectora-ai-percent {
           font-size: 32px;
           font-weight: 900;
@@ -45,7 +75,6 @@ function showNotification(tabId, aiPercent, message) {
           margin-bottom: 6px;
           letter-spacing: -1px;
         }
-        
         .vectora-label {
           font-size: 11px;
           color: #888;
@@ -54,14 +83,12 @@ function showNotification(tabId, aiPercent, message) {
           margin-bottom: 10px;
           font-weight: 600;
         }
-        
         .vectora-message {
           font-size: 13px;
           color: #b0b0b0;
           margin-bottom: 12px;
           line-height: 1.4;
         }
-        
         .vectora-powered {
           font-size: 10px;
           color: #666;
@@ -69,7 +96,6 @@ function showNotification(tabId, aiPercent, message) {
           font-weight: 500;
           letter-spacing: 0.5px;
         }
-        
         @media (max-width: 480px) {
           #vectora-notification {
             top: 12px;
@@ -81,17 +107,18 @@ function showNotification(tabId, aiPercent, message) {
             font-size: 28px;
           }
         }
-      \`;
+      `;
       document.head.appendChild(style);
       
+      // Create notification element
       const notif = document.createElement('div');
       notif.id = 'vectora-notification';
-      notif.innerHTML = \`
+      notif.innerHTML = `
         <div class="vectora-label">AI Involvement</div>
-        <div class="vectora-ai-percent">\${Math.round(arguments[0])}%</div>
-        <div class="vectora-message">\${arguments[1]}</div>
+        <div class="vectora-ai-percent">${Math.round(percent)}%</div>
+        <div class="vectora-message">${msg}</div>
         <div class="vectora-powered">Powered by Vectora</div>
-      \`;
+      `;
       document.body.appendChild(notif);
       
       // Auto-remove after 4.5 seconds
@@ -99,12 +126,8 @@ function showNotification(tabId, aiPercent, message) {
         notif.style.animation = 'vectoraSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) reverse';
         setTimeout(() => notif.remove(), 300);
       }, 4500);
-    })(\${aiPercent}, \`\${message}\`);
-  \`;
-  
-  chrome.scripting.executeScript({
-    target: { tabId: tabId },
-    func: new Function(notifCode)
+    },
+    args: [aiPercent, message]
   });
 }
 
