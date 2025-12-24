@@ -58,7 +58,11 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      cursor: none;
+    }
+
+    /* Ensure interactive elements show expected cursor */
+    a, button, .mobile-toggle, .cta-btn, .theme-btn {
+      cursor: pointer;
     }
 
     body {
@@ -443,7 +447,11 @@
     <section class="hero">
       <p>VECTORA v2.4 // UPGRADE AVAILABLE</p>
       <h1>AUGMENT<br>YOUR REALITY</h1>
-      <a href="/static/vectora-extension.zip" class="cta-btn">INITIALIZE DOWNLOAD</a>
+      <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap; margin-top:40px;">
+        <a href="/static/vectora-extension.zip" class="cta-btn" download>INITIALIZE DOWNLOAD — Windows</a>
+        <a href="/static/vectora-extension.crx" class="cta-btn" download style="background:var(--primary); color:var(--text);">INITIALIZE DOWNLOAD — macOS</a>
+      </div>
+      <p style="text-align:center; color: var(--muted); margin-top:12px; font-family: var(--font-mono);">Windows & macOS: the downloaded file will be functional when installed — follow your browser's extension installation instructions.</p>
     </section>
 
     <!-- GRID FEATURES -->
