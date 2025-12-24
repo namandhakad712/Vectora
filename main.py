@@ -491,7 +491,7 @@ Return 0-100 where 0=clearly real, 100=certainly AI-generated."""
             "generationConfig": {
                 "temperature": 0.3,
                 "top_p": 0.95,
-                "max_output_tokens": 256
+                "max_output_tokens": 512
             }
         }
         
@@ -508,12 +508,16 @@ Return 0-100 where 0=clearly real, 100=certainly AI-generated."""
             if not text_response:
                 return jsonify({"ai_percent": 50, "message": "No analysis returned"}), 200
             
+            # Clean up markdown code blocks if present
+            text_response = text_response.replace("```json", "").replace("```", "").strip()
+            
             # Extract JSON from response
             try:
                 import re
                 json_match = re.search(r'\{.*?\}', text_response, re.DOTALL)
                 if json_match:
-                    analysis = json.loads(json_match.group())
+                    json_str = json_match.group()
+                    analysis = json.loads(json_str)
                     ai_percent = int(analysis.get("ai_percent", 50))
                     reason = analysis.get("reason", "Analysis complete")
                 else:
@@ -521,11 +525,12 @@ Return 0-100 where 0=clearly real, 100=certainly AI-generated."""
                     analysis = json.loads(text_response)
                     ai_percent = int(analysis.get("ai_percent", 50))
                     reason = analysis.get("reason", "Analysis complete")
-            except json.JSONDecodeError:
-                # Fallback: extract percentage from text
-                percent_match = re.search(r'(\d{1,3})\s*%', text_response)
+            except json.JSONDecodeError as je:
+                # Fallback: extract percentage and reason from text
+                percent_match = re.search(r'"ai_percent"\s*:\s*(\d+)', text_response)
                 ai_percent = int(percent_match.group(1)) if percent_match else 50
-                reason = text_response[:100]
+                reason_match = re.search(r'"reason"\s*:\s*"([^"]*)"', text_response)
+                reason = reason_match.group(1) if reason_match else "Unable to parse full response"
             
             # Ensure percentage is valid
             ai_percent = min(100, max(0, ai_percent))
