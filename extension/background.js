@@ -18,61 +18,69 @@ chrome.runtime.onInstalled.addListener(() => {
 
 async function postToBackend(payload){
   try{
-    // For local testing: http://127.0.0.1:5001/ai-check
-    // For Vercel production: https://YOUR-VERCEL-APP.vercel.app/ai-check
-    const resp = await fetch('http://127.0.0.1:5001/ai-check', {
+    // Use Vercel production URL or local fallback
+    const endpoint = 'https://vectora.vercel.app/ai-check' || 'http://127.0.0.1:5001/ai-check';
+    const resp = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      timeout: 15000
     });
+    
     if(!resp.ok){
-      return { error: 'Network error: ' + resp.status };
+      return { error: 'Server error: ' + resp.status, ai_percent: 50, message: 'Unable to reach analysis server' };
     }
-    return await resp.json();
+    const data = await resp.json();
+    return data || { error: 'No response', ai_percent: 50, message: 'Analysis unavailable' };
   }catch(e){
-    return { error: String(e) };
+    return { error: String(e), ai_percent: 50, message: 'Network error - please try again' };
   }
 }
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if(info.menuItemId === 'vectora-check-text'){
     const selectedText = info.selectionText || '';
-    const result = await postToBackend({ text: selectedText });
-    if(result && result.error){
+    if(!selectedText.trim()){
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: (msg) => alert(msg),
-        args: [result.error]
+        func: () => alert('Please select some text to check.')
       });
-    } else {
-      const msg = `AI Likelihood: ${result.ai_percent}% — ${result.message}`;
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (m) => alert(m),
-        args: [msg]
-      });
-      // store last result
-      chrome.storage.local.set({ lastCheck: result });
+      return;
     }
+    
+    const result = await postToBackend({ text: selectedText });
+    const ai_percent = result.ai_percent || 50;
+    const message = result.message || 'Analysis complete';
+    const msg = `AI Involvement: ${ai_percent}%\n${message}`;
+    
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (m) => alert(m),
+      args: [msg]
+    });
+    chrome.storage.local.set({ lastCheck: result });
   }
 
   if(info.menuItemId === 'vectora-check-image'){
     const srcUrl = info.srcUrl || '';
-    const result = await postToBackend({ image_url: srcUrl });
-    if(result && result.error){
+    if(!srcUrl){
       chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: (msg) => alert(msg),
-        args: [result.error]
+        func: () => alert('Could not extract image URL.')
       });
-    } else {
-      const msg = `AI Likelihood: ${result.ai_percent}% — ${result.message}`;
-      chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        func: (m) => alert(m),
-        args: [msg]
-      });
-      chrome.storage.local.set({ lastCheck: result });
+      return;
     }
+    
+    const result = await postToBackend({ image_url: srcUrl });
+    const ai_percent = result.ai_percent || 50;
+    const message = result.message || 'Analysis complete';
+    const msg = `AI Involvement: ${ai_percent}%\n${message}`;
+    
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: (m) => alert(m),
+      args: [msg]
+    });
+    chrome.storage.local.set({ lastCheck: result });
   }
 });
