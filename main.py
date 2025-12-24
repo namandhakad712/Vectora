@@ -454,11 +454,11 @@ def ai_check():
         else:
             prompt = f"{sys_prompt}\n\nAnalyze this video from URL: {video_url}"
         
-        # Call Gemini API
+        # Call Gemini Flash 2.5 for better AI detection accuracy
         if not GEMINI_API_KEY:
             return jsonify({"error": "API key not configured"}), 500
         
-        url = f"{GEMINI_BASE_URL}/models/gemini-2.0-flash:generateContent"
+        url = f"{GEMINI_BASE_URL}/models/gemini-2.5-flash:generateContent"
         params = {"key": GEMINI_API_KEY}
         headers = {"Content-Type": "application/json"}
         
