@@ -380,6 +380,42 @@ function updateSelectedDisplay(provider, model) {
 
     span.appendChild(icons);
     span.appendChild(name);
+
+    // Update capabilities display below selector
+    updateCapabilitiesDisplay(provider, model.capabilities);
+}
+
+function updateCapabilitiesDisplay(provider, capabilities) {
+    const capsDiv = document.getElementById(`${provider}-capabilities`);
+    if (!capsDiv) return;
+
+    const iconMap = {
+        text: 'notepad.png',
+        image: 'image-camera.png',
+        web_search: 'web-search.png'
+    };
+
+    const labelMap = {
+        text: 'Text Analysis',
+        image: 'Image Analysis',
+        web_search: 'Web Search'
+    };
+
+    let html = '<div class="cap-title">Model Capabilities:</div><div class="cap-list">';
+
+    capabilities.forEach(cap => {
+        html += `
+            <div class="cap-item">
+                <img src="icons/${iconMap[cap]}" alt="${cap}">
+                <span>${labelMap[cap]}</span>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+
+    capsDiv.innerHTML = html;
+    capsDiv.classList.add('show');
 }
 
 // Save settings
