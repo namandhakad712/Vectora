@@ -514,6 +514,101 @@
             background: #cbd5e0;
             border-radius: 3px;
         }
+
+        /* Clear History Button */
+        .clear-history-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 10px;
+            background: #fed7d7;
+            color: #c53030;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-history-btn:hover {
+            background: #fc8181;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Vectora API Toggle */
+        .vectora-api-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 2px solid #667eea30;
+        }
+
+        .toggle-container {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+
+        .toggle-container input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .toggle-container input:checked+.toggle-slider {
+            background-color: #667eea;
+        }
+
+        .toggle-container input:checked+.toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle-info {
+            flex: 1;
+        }
+
+        .toggle-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .toggle-desc {
+            font-size: 0.75rem;
+            color: #718096;
+        }
     </style>
 </head>
 
@@ -526,6 +621,7 @@
             <div class="history-list" id="history-list">
                 <div class="history-empty">No history yet. Start using the extension!</div>
             </div>
+            <button class="clear-history-btn" id="clear-history-btn">🗑️ Clear History</button>
         </div>
 
         <!-- Main Content -->
@@ -533,6 +629,18 @@
             <div class="container">
                 <h1>Settings</h1>
                 <p class="subtitle">Configure your AI provider</p>
+
+                <!-- Use Vectora API Toggle -->
+                <div class="vectora-api-toggle">
+                    <label class="toggle-container">
+                        <input type="checkbox" id="use-vectora-api">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="toggle-info">
+                        <div class="toggle-title">Use Vectora API</div>
+                        <div class="toggle-desc">Fetch API keys from vectoraai.vercel.app (no manual setup needed)</div>
+                    </div>
+                </div>
 
                 <!-- Icon Legend -->
                 <div class="icon-legend">

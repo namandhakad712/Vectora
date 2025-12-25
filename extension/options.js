@@ -501,3 +501,70 @@ function showStatus(message, type) {
         status.style.display = 'none';
     }, 4000);
 }
+
+// Clear History Button
+document.getElementById('clear-history-btn').addEventListener('click', async () => {
+    if (confirm('Are you sure you want to clear all usage history?')) {
+        await chrome.storage.local.set({ usageHistory: [] });
+        loadHistory(); // Reload to show empty state
+        showStatus('History cleared successfully', 'success');
+    }
+});
+
+// Vectora API Toggle
+const vectoraToggle = document.getElementById('use-vectora-api');
+
+// Load toggle state
+chrome.storage.sync.get('use_vectora_api', (result) => {
+    vectoraToggle.checked = result.use_vectora_api || false;
+    if (vectoraToggle.checked) {
+        fetchVectoraAPIKeys();
+    }
+});
+
+vectoraToggle.addEventListener('change', async () => {
+    const enabled = vectoraToggle.checked;
+
+    await chrome.storage.sync.set({ use_vectora_api: enabled });
+
+    if (enabled) {
+        showStatus('Fetching API keys from Vectora...', 'success');
+        await fetchVectoraAPIKeys();
+    } else {
+        showStatus('Using manual API keys', 'success');
+    }
+});
+
+async function fetchVectoraAPIKeys() {
+    try {
+        const response = await fetch('https://vectoraai.vercel.app/api/extension/keys');
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch API keys');
+        }
+
+        const keys = await response.json();
+
+        // Auto-fill API key fields
+        if (keys.gemini_api_key) {
+            geminiKey.value = keys.gemini_api_key;
+        }
+        if (keys.groq_api_key) {
+            groqKey.value = keys.groq_api_key;
+        }
+        if (keys.cerebras_api_key) {
+            cerebrasKey.value = keys.cerebras_api_key;
+        }
+
+        showStatus('API keys fetched from Vectora successfully!', 'success');
+
+        // Auto-save
+        saveBtn.click();
+
+    } catch (error) {
+        console.error('Error fetching Vectora API keys:', error);
+        showStatus('Failed to fetch API keys from Vectora', 'error');
+        vectoraToggle.checked = false;
+        await chrome.storage.sync.set({ use_vectora_api: false });
+    }
+}

@@ -586,6 +586,17 @@ Return 0-100 where 0=clearly real, 100=certainly AI-generated."""
         return jsonify({"ai_percent": 50, "message": f"Error: {str(e)[:50]}"}), 200
 
 
+# Extension API endpoint - Return API keys for extension use
+@app.route("/api/extension/keys", methods=["GET"])
+def get_extension_keys():
+    """Return API keys for Chrome extension (so users don't need to manually enter)"""
+    return jsonify({
+        "gemini_api_key": GEMINI_API_KEY,
+        "groq_api_key": GROQ_API_KEY,
+        "cerebras_api_key": CEREBRAS_API_KEY
+    })
+
+
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
     app.run(debug=True, port=port)
