@@ -224,7 +224,7 @@ function activateScreenCropper() {
     <div class="vectora-cropper-container">
       <div class="vectora-crop-area" id="vectora-crop-area"></div>
       <div class="vectora-cropper-instructions">
-        <p>Click and drag to select area (minimum 100x100px)</p>
+        <p>Click and drag to select any area</p>
         <button id="vectora-capture-btn">Capture & Analyze</button>
         <button id="vectora-cancel-btn">Cancel</button>
       </div>
@@ -357,8 +357,9 @@ function captureSelectedArea() {
 
   console.log('Screen capture dimensions:', width, height);
 
-  if (width < 100 || height < 100) {
-    alert(`Selected area: ${Math.round(width)}x${Math.round(height)}px\nMinimum required: 100x100 pixels\n\nDrag a larger selection!`);
+  // NO SIZE LIMIT - Only prevent accidental clicks (10x10px minimum)
+  if (width < 10 || height < 10) {
+    alert(`Selection too small: ${Math.round(width)}x${Math.round(height)}px\nPlease select a visible area.`);
     return;
   }
 

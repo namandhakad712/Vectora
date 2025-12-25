@@ -2,8 +2,6 @@ __pycache__/
 *.py[cod]
 *$py.class
 venv/
-env/
-.env
 .DS_Store
 extension.zip
 extension.crx
@@ -13,4 +11,5 @@ temp.md
 tmp.md
 GEMINI-DOCS
 GROQ-DOCS
-README.md
+.env
+.env/
