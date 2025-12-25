@@ -38,15 +38,27 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ success: true });
   }
 
-  // Handle text analysis from popup
+  // Handle text analysis from popup/content script
   else if (message.action === 'analyzeText') {
+    console.log('Text analysis requested:', message.text.substring(0, 50) + '...');
+
     const apiKey = settings[`${settings.provider}_api_key`];
     if (!apiKey) {
-      sendResponse({ success: false, message: 'Please configure API key in settings' });
+      const errorMsg = 'Please configure API key in settings';
+      sendResponse({ success: false, message: errorMsg });
+
+      // Show error notification
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) showNotification(tabs[0].id, 0, errorMsg);
+      });
+
       return true;
     }
 
+    console.log('Calling analyzeText with provider:', settings.provider);
+
     analyzeText(message.text).then(result => {
+      console.log('Analysis result:', result);
       sendResponse({ success: true, ...result });
 
       // Show notification on active tab and save history
@@ -57,7 +69,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       });
     }).catch(error => {
-      sendResponse({ success: false, message: error.message });
+      console.error('Text analysis error:', error);
+      const errorMsg = `Error: ${error.message}`;
+      sendResponse({ success: false, message: errorMsg });
+
+      // Show error notification
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        if (tabs[0]) showNotification(tabs[0].id, 0, errorMsg);
+      });
     });
 
     return true; // Keep channel open for async response
@@ -179,25 +198,36 @@ async function saveToHistory(url, feature, result) {
 // Crop captured image and analyze
 async function cropAndAnalyze(dataUrl, crop) {
   try {
-    // Create canvas to crop image
-    const img = new Image();
-    img.src = dataUrl;
+    console.log('Cropping screenshot...', crop);
 
-    await new Promise((resolve) => {
-      img.onload = resolve;
-    });
+    // Convert data URL to blob
+    const response = await fetch(dataUrl);
+    const blob = await response.blob();
 
-    const canvas = new OffscreenCanvas(crop.width, crop.height);
+    // Create ImageBitmap (works in service worker)
+    const imageBitmap = await createImageBitmap(blob);
+
+    // Validate crop dimensions
+    const actualWidth = Math.min(crop.width, imageBitmap.width - crop.x);
+    const actualHeight = Math.min(crop.height, imageBitmap.height - crop.y);
+
+    console.log('Image dimensions:', imageBitmap.width, imageBitmap.height);
+    console.log('Crop area:', crop.x, crop.y, actualWidth, actualHeight);
+
+    // Create canvas and crop
+    const canvas = new OffscreenCanvas(actualWidth, actualHeight);
     const ctx = canvas.getContext('2d');
 
     ctx.drawImage(
-      img,
-      crop.x, crop.y, crop.width, crop.height,
-      0, 0, crop.width, crop.height
+      imageBitmap,
+      crop.x, crop.y, actualWidth, actualHeight,
+      0, 0, actualWidth, actualHeight
     );
 
     const croppedBlob = await canvas.convertToBlob({ type: 'image/png' });
     const croppedDataUrl = await blobToDataUrl(croppedBlob);
+
+    console.log('Cropped image created, analyzing...');
 
     // Analyze cropped image
     const result = await analyzeImageFromDataUrl(croppedDataUrl);
@@ -599,25 +629,31 @@ function parseAIResponse(text) {
     const jsonMatch = text.match(/\{.*?\}/s);
     if (jsonMatch) {
       const json = JSON.parse(jsonMatch[0]);
+
+      // NO FAKE DATA - must have real ai_percent from AI
+      if (json.ai_percent === undefined || json.ai_percent === null) {
+        throw new Error('AI response missing ai_percent field');
+      }
+
       return {
-        ai_percent: Math.min(100, Math.max(0, parseInt(json.ai_percent) || 50)),
+        ai_percent: Math.min(100, Math.max(0, parseInt(json.ai_percent))),
         message: json.reason || 'Analysis complete'
       };
     }
 
     // Fallback: extract from text
     const percentMatch = text.match(/(\d+)%/);
-    const ai_percent = percentMatch ? parseInt(percentMatch[1]) : 50;
+    if (!percentMatch) {
+      throw new Error(`AI response has no percentage. Response: ${text.substring(0, 200)}`);
+    }
 
     return {
-      ai_percent: Math.min(100, Math.max(0, ai_percent)),
-      message: text.substring(0, 100)
+      ai_percent: Math.min(100, Math.max(0, parseInt(percentMatch[1]))),
+      message: text.substring(0, 200)
     };
   } catch (error) {
-    return {
-      ai_percent: 50,
-      message: 'Unable to parse response'
-    };
+    console.error('Failed to parse AI response:', text);
+    throw new Error(`Failed to parse AI response: ${error.message}`);
   }
 }
 

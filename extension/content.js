@@ -4,6 +4,7 @@
 
 let selectionPopup = null;
 let cropperOverlay = null;
+let currentScrollHandler = null; // For image selector scroll handling
 
 // Create selection popup
 function createSelectionPopup() {
@@ -148,53 +149,82 @@ function activateImageSelector() {
     background: rgba(0, 0, 0, 0.7);
     z-index: 999998;
     cursor: crosshair;
+    overflow: hidden;
   `;
 
   document.body.appendChild(overlay);
 
-  // Highlight all images
-  const images = document.querySelectorAll('img');
-  images.forEach(img => {
-    // Clone image position
-    const rect = img.getBoundingClientRect();
-    const imageOverlay = document.createElement('div');
-    imageOverlay.className = 'vectora-image-highlight';
-    imageOverlay.style.cssText = `
-      position: fixed;
-      left: ${rect.left}px;
-      top: ${rect.top}px;
-      width: ${rect.width}px;
-      height: ${rect.height}px;
-      border: 3px solid #00f3ff;
-      box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
-      cursor: pointer;
-      z-index: 999999;
-      transition: all 0.2s;
-    `;
+  const highlightBoxes = [];
 
-    imageOverlay.addEventListener('mouseenter', () => {
-      imageOverlay.style.transform = 'scale(1.05)';
-      imageOverlay.style.boxShadow = '0 0 30px rgba(0, 243, 255, 0.9)';
+  // Function to update highlight positions
+  function updateHighlightPositions() {
+    const images = document.querySelectorAll('img');
+
+    // Remove old highlights
+    highlightBoxes.forEach(box => box.remove());
+    highlightBoxes.length = 0;
+
+    // Create new highlights
+    images.forEach(img => {
+      const rect = img.getBoundingClientRect();
+
+      // Only show if visible in viewport
+      if (rect.width > 0 && rect.height > 0 &&
+        rect.top < window.innerHeight && rect.bottom > 0) {
+
+        const imageOverlay = document.createElement('div');
+        imageOverlay.className = 'vectora-image-highlight';
+        imageOverlay.style.cssText = `
+          position: fixed;
+          left: ${rect.left}px;
+          top: ${rect.top}px;
+          width: ${rect.width}px;
+          height: ${rect.height}px;
+          border: 3px solid #00f3ff;
+          box-shadow: 0 0 20px rgba(0, 243, 255, 0.6);
+          cursor: pointer;
+          z-index: 999999;
+          transition: all 0.2s;
+          pointer-events: auto;
+        `;
+
+        imageOverlay.addEventListener('mouseenter', () => {
+          imageOverlay.style.transform = 'scale(1.05)';
+          imageOverlay.style.boxShadow = '0 0 30px rgba(0, 243, 255, 0.9)';
+        });
+
+        imageOverlay.addEventListener('mouseleave', () => {
+          imageOverlay.style.transform = 'scale(1)';
+          imageOverlay.style.boxShadow = '0 0 20px rgba(0, 243, 255, 0.6)';
+        });
+
+        imageOverlay.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const imgUrl = img.src || img.currentSrc;
+          console.log('Image clicked:', imgUrl);
+          chrome.runtime.sendMessage({
+            action: 'analyzeImage',
+            imageUrl: imgUrl
+          });
+          deactivateImageSelector();
+        });
+
+        overlay.appendChild(imageOverlay);
+        highlightBoxes.push(imageOverlay);
+      }
     });
+  }
 
-    imageOverlay.addEventListener('mouseleave', () => {
-      imageOverlay.style.transform = 'scale(1)';
-      imageOverlay.style.boxShadow = '0 0 20px rgba(0, 243, 255, 0.6)';
-    });
+  // Initial highlight
+  updateHighlightPositions();
 
-    imageOverlay.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const imgUrl = img.src || img.currentSrc;
-      console.log('Image clicked:', imgUrl);
-      chrome.runtime.sendMessage({
-        action: 'analyzeImage',
-        imageUrl: imgUrl
-      });
-      deactivateImageSelector();
-    });
-
-    overlay.appendChild(imageOverlay);
-  });
+  // Update on scroll
+  let scrollTimeout;
+  currentScrollHandler = () => { // Assign to the module-scoped variable
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(updateHighlightPositions, 100);
+  };
+  window.addEventListener('scroll', currentScrollHandler, { passive: true });
 
   // Cancel on overlay click
   overlay.addEventListener('click', () => {
@@ -209,7 +239,14 @@ function activateImageSelector() {
 
 function deactivateImageSelector() {
   const overlay = document.getElementById('vectora-image-overlay');
-  if (overlay) overlay.remove();
+  if (overlay) {
+    // Remove scroll listener
+    if (currentScrollHandler) {
+      window.removeEventListener('scroll', currentScrollHandler);
+      currentScrollHandler = null; // Clear the reference
+    }
+    overlay.remove();
+  }
   hideInstructions();
 }
 
@@ -351,20 +388,16 @@ function activateScreenCropper() {
 
 function captureSelectedArea() {
   const cropArea = document.getElementById('vectora-crop-area');
-
-  const width = parseFloat(cropArea.style.width) || 0;
-  const height = parseFloat(cropArea.style.height) || 0;
-
-  console.log('Screen capture dimensions:', width, height);
-
-  // NO SIZE LIMIT - Only prevent accidental clicks (10x10px minimum)
-  if (width < 10 || height < 10) {
-    alert(`Selection too small: ${Math.round(width)}x${Math.round(height)}px\nPlease select a visible area.`);
-    return;
-  }
-
   const rect = cropArea.getBoundingClientRect();
 
+  console.log('Sending screen capture request:', {
+    x: rect.left,
+    y: rect.top,
+    width: rect.width,
+    height: rect.height
+  });
+
+  // Just send the coordinates - let background.js handle everything
   chrome.runtime.sendMessage({
     action: 'captureVisibleTab',
     crop: {
@@ -391,53 +424,53 @@ function showInstructions(message, onCancel) {
   const overlay = document.createElement('div');
   overlay.id = 'vectora-instruction-overlay';
   overlay.innerHTML = `
-    <div class="vectora-instruction-box">
+      < div class="vectora-instruction-box" >
       <p>${message}</p>
       <button id="vectora-instruction-cancel">Cancel (ESC)</button>
-    </div>
-  `;
+    </div >
+      `;
 
   const style = document.createElement('style');
   style.textContent = `
-    #vectora-instruction-overlay {
+    #vectora - instruction - overlay {
       position: fixed;
       top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 999997;
+      left: 50 %;
+      transform: translateX(-50 %);
+      z - index: 999997;
     }
     
-    .vectora-instruction-box {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    .vectora - instruction - box {
+      background: linear - gradient(135deg, #1a1a2e 0 %, #16213e 100 %);
       border: 1px solid rgba(0, 243, 255, 0.5);
-      border-radius: 8px;
+      border - radius: 8px;
       padding: 15px 20px;
-      text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 243, 255, 0.3);
+      text - align: center;
+      box - shadow: 0 4px 12px rgba(0, 243, 255, 0.3);
     }
     
-    .vectora-instruction-box p {
+    .vectora - instruction - box p {
       color: #00f3ff;
-      font-size: 14px;
-      margin-bottom: 10px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font - size: 14px;
+      margin - bottom: 10px;
+      font - family: -apple - system, BlinkMacSystemFont, 'Segoe UI', sans - serif;
     }
     
-    .vectora-instruction-box button {
+    .vectora - instruction - box button {
       background: rgba(255, 255, 255, 0.1);
       color: #fff;
       border: none;
       padding: 8px 16px;
-      border-radius: 4px;
+      border - radius: 4px;
       cursor: pointer;
-      font-size: 13px;
+      font - size: 13px;
       transition: all 0.2s;
     }
     
-    .vectora-instruction-box button:hover {
+    .vectora - instruction - box button:hover {
       background: rgba(255, 255, 255, 0.2);
     }
-  `;
+    `;
 
   document.head.appendChild(style);
   document.body.appendChild(overlay);
