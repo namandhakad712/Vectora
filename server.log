@@ -12,3 +12,5 @@ Cerebras API error: 404 - {"message":"Model llama-3-70b-instruct does not exist 
  * Restarting with stat
  * Debugger is active!
  * Debugger PIN: 721-381-479
+Cerebras API error: 404 - {"message":"Model llama-3-70b-instruct does not exist or you do not have access to it.","type":"not_found_error","param":"model","code":"model_not_found"}
+127.0.0.1 - - [25/Dec/2025 08:34:22] "POST /ai-check HTTP/1.1" 200 -
